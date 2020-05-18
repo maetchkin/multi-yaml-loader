@@ -1,0 +1,17 @@
+{
+  "name": "multi-yaml-loader",
+  "version": "0.0.1",
+  "description": "YAML loader for webpack with !include support",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "yaml",
+    "webpack",
+    "loader",
+    "include"
+  ],
+  "author": "",
+  "license": "MIT"
+}
