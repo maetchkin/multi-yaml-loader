@@ -69,42 +69,6 @@ const getLoaderState =  ({ resourcePath, rootContext, context }) =>
 
 const defaultOptions = {prettyErrors: true, keepCstNodes: true};
 
-/*
-return new Promise(
-        (resolve, reject) => {
-            try {
-                if (content) {
-                    let acc = {};
-                    const options = {
-                                        defaultOptions,
-                                        customTags: [
-                                            tagInclude({
-                                                context,
-                                                rootContext,
-                                                acc
-                                            })
-                                        ]
-                                    };
-                    const doc = YAML.parse( content, options );
-                    const res = { doc, acc };
-                    return includeResolve({filecache, acc})
-                            .then(
-                                () => resolve(
-                                    `module.exports = ${ JSON.stringify(res) }`
-                                )
-                            );
-
-                } else {
-                    throw new Error('no content in ' + resourcePath);
-                }
-            } catch (error) {
-                reject(error)
-            }
-        }
-    );
-
-*/
-
 function syncLoadFile ({resourcePath}) {
     return fs.readFileSync(
                 resourcePath,
@@ -112,7 +76,6 @@ function syncLoadFile ({resourcePath}) {
             )
     ;
 };
-
 
 function multiYamlParse (cache, content) {
     const incs    = {};
@@ -169,6 +132,7 @@ function unpack (data) {
         } else {
             visit.push(docindex);
             const {doc, incs = []} = data[docindex];
+            (doc || {})[ Symbol("doc") ] = docindex;
             res = incs.reduce(
                 (doc, {index, incs}) => {
                     const incdoc = resolveIncs(index, visit);
@@ -185,43 +149,55 @@ function unpack (data) {
         }
         return res;
     };
-    resolveIncs();
-    return data[0].doc;
+
+    return resolveIncs();
 }
 
 function getModulePromise (state) {
-    const fileQueue = [state];
-    const results   = {};
-    let cache;
-    while ( cache = fileQueue.pop() ) {
-        if (cache.resourcePath in results) {
-            continue;
-        } else {
-            try {
-                const result = syncParseYaml(cache);
-                results[cache.resourcePath] = result;
-                Object
-                    .keys( result.incs )
-                    .forEach(
-                        file => {
-                            const add = { ...state, resourcePath:file, from:cache.resourcePath };
-                            fileQueue.push(add);
-                        }
-                    )
-                ;
-            } catch (err) {
-                throw new YamlIncludeError(err, cache.from || cache.resourcePath);
+    return new Promise(
+        (resolve, reject) => {
+            const fileQueue = [state];
+            const results   = {};
+            let cache;
+            while ( cache = fileQueue.pop() ) {
+                if (cache.resourcePath in results) {
+                    continue;
+                } else {
+                    try {
+                        const result = syncParseYaml(cache);
+                        results[cache.resourcePath] = result;
+                        Object
+                            .keys( result.incs )
+                            .forEach(
+                                file => {
+                                    const add = { ...state, resourcePath:file, from:cache.resourcePath };
+                                    fileQueue.push(add);
+                                }
+                            )
+                        ;
+                    } catch (err) {
+                        reject(
+                            new YamlIncludeError(err, cache.from || cache.resourcePath)
+                        );
+                    }
+                }
             }
-        }
-    }
 
-    return Promise.resolve(`
-        ${ unpack }
-        const data = ${ JSON.stringify( pack(results, state.resourcePath) ) };
-        const res = unpack(data);
-        console.log(">>>>", {data});
-        module.exports = res;
-    `);
+            resolve(results);
+        }
+    )
+    .then(
+        results => JSON.stringify( pack(results, state.resourcePath) )
+    )
+    .then(
+        packed => `
+            ${ unpack }
+            const packed = ${ packed };
+            const res = unpack(packed);
+            module.exports = res;
+        `
+    )
+
 };
 
 function multiYamlLoader () {
