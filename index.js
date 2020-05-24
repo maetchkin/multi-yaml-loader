@@ -129,45 +129,99 @@ function syncParseYaml (cache) {
     return {...result, cache};
 };
 
+
 class YamlIncludeError extends Error {
-    constructor(src, msg){
+    constructor (err, fileName) {
         super();
         this.name = 'YamlIncludeError';
-        this.stack = `Error in ${src}:\n    > ${msg}`;
+        this.message =  `Error in ${fileName}:\n    > ${err}`;
     }
 };
 
+const packIncsReducer = files => (packed,[key,incs]) => {
+    const index = files.indexOf(key);
+    packed.push({index, incs});
+    return packed;
+};
 
+const packReducer = files => (packed,[key,{doc, incs = {}}]) => {
+    const index = files.indexOf(key);
+    const incsEntries = Object.entries(incs);
+    packed[ index ] = {doc};
+    if (incsEntries.length > 0) {
+        packed[ index ].incs = incsEntries.reduce(packIncsReducer(files),[]);
+    }
+    return packed;
+};
+
+function pack (data, root) {
+    const files  = Object.keys(data).sort( f1 => f1 === root ? -1 : 1 );
+    const packed = Object.entries(data).reduce( packReducer(files) ,[]);
+    return packed;
+}
+
+function unpack (data) {
+
+    const resolveIncs = (docindex = 0, visit = []) => {
+        let res;
+        if ( visit.includes(docindex) ) {
+            res = data[docindex].doc;
+        } else {
+            visit.push(docindex);
+            const {doc, incs = []} = data[docindex];
+            res = incs.reduce(
+                (doc, {index, incs}) => {
+                    const incdoc = resolveIncs(index, visit);
+                    incs.forEach(
+                        inc => {
+                            let ptr = doc;
+                            while ( inc.length > 1 ) { ptr = ptr[ inc.shift() ]; }
+                            ptr[ inc.shift() ] = incdoc;
+                        }
+                    );
+                    return doc;
+                }, doc
+            )
+        }
+        return res;
+    };
+    resolveIncs();
+    return data[0].doc;
+}
 
 function getModulePromise (state) {
     const fileQueue = [state];
-    const all       = {};
+    const results   = {};
     let cache;
     while ( cache = fileQueue.pop() ) {
-        if (cache.resourcePath in all) {
+        if (cache.resourcePath in results) {
             continue;
         } else {
             try {
-                all[cache.resourcePath] = syncParseYaml(cache);
+                const result = syncParseYaml(cache);
+                results[cache.resourcePath] = result;
                 Object
-                    .keys( all[cache.resourcePath].incs )
+                    .keys( result.incs )
                     .forEach(
                         file => {
                             const add = { ...state, resourcePath:file, from:cache.resourcePath };
-                            //console.log('<INC>', add);
                             fileQueue.push(add);
                         }
                     )
                 ;
-            } catch (e) {
-                throw new YamlIncludeError(cache.from || cache.resourcePath, e);
+            } catch (err) {
+                throw new YamlIncludeError(err, cache.from || cache.resourcePath);
             }
         }
     }
-    console.log(' ====fileQueue===== \n', all );
 
-    //return Promise.all( all );
-    return Promise.resolve(`module.exports = "'хуй'"`);
+    return Promise.resolve(`
+        ${ unpack }
+        const data = ${ JSON.stringify( pack(results, state.resourcePath) ) };
+        const res = unpack(data);
+        console.log(">>>>", {data});
+        module.exports = res;
+    `);
 };
 
 function multiYamlLoader () {
