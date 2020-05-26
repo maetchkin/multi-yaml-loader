@@ -31,30 +31,40 @@ const createLoading = file =>
 
 test(
     'no include',
-    () => expect(
-            createLoading("simple.yaml")
-          ).resolves.toEqual(
-              { name: 'simple' }
-          )
+    () =>   expect(
+              createLoading("simple.yaml")
+            ).resolves.toEqual(
+                { name: 'simple' }
+            )
 );
 
 test(
     'with include',
+    () =>   expect(
+              createLoading("example.yaml")
+            ).resolves.toEqual(
+                { name: 'example', content: { name: 'simple' } }
+            )
+);
+
+
+test(
+    'array include',
     () => expect(
-            createLoading("example.yaml")
-          ).resolves.toEqual(
-              { name: 'example', content: { name: 'simple' } }
-          )
+            createLoading("array.yaml")
+        ).resolves.toEqual(
+            [{name:'item-1'},{name:'item-2'}]
+        )
 );
 
 test(
     'cycle include',
     () => createLoading("cycle.yaml")
-        .then(
-            res => {
-                expect(res === res.self).toEqual(true);
-            }
-        )
+            .then(
+                res => {
+                    expect(res === res.self).toEqual(true);
+                }
+            )
 );
 
 
