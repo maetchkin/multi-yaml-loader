@@ -3,11 +3,6 @@ const fs     = require('fs');
 const tmp    = require('tmp');
 const loader = require('..');
 
-const TESTS = {
-    "simple.yaml":  { name: 'simple' },
-    "example.yaml": { name: 'example', content: { name: 'simple' } }
-};
-
 function MockLoaderContext (file, resolve, reject) {
     this.resourcePath = path.resolve(__dirname, file);
     this.rootContext  = path.resolve(process.env.INIT_CWD);
@@ -15,8 +10,7 @@ function MockLoaderContext (file, resolve, reject) {
     this.async = () => (err, res) => err ? reject(err) : resolve(res);
 }
 
-
-const makeLoadTest = file =>
+const createLoading = file =>
     new Promise(
         (resolve, reject) => {
             const ctx = new MockLoaderContext(file, resolve, reject);
@@ -33,13 +27,31 @@ const makeLoadTest = file =>
     )
 ;
 
-Object.entries(TESTS)
-    .forEach(
-        ([file, value], ti) => {
-            test(
-                `#${ti + 1}: Test loading ${file}`,
-                () => expect( makeLoadTest(file) ).resolves.toEqual(value)
-            )
-        }
-    )
-;
+test(
+    'no include',
+    () => expect(
+            createLoading("simple.yaml")
+          ).resolves.toEqual(
+              { name: 'simple' }
+          )
+);
+
+test(
+    'with include',
+    () => expect(
+            createLoading("example.yaml")
+          ).resolves.toEqual(
+              { name: 'example', content: { name: 'simple' } }
+          )
+);
+
+test(
+    'cycle include',
+    () => createLoading("cycle.yaml")
+        .then(
+            res => {
+                expect(res === res.self).toEqual(true);
+            }
+        )
+
+);
