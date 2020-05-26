@@ -1,2 +1,2 @@
-name: name
-content: content
+name: example
+content: !include simple.yaml

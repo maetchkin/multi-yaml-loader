@@ -1,6 +1,6 @@
 const loaderUtils = require('loader-utils');
 const YAML        = require('yaml');
-const YAMLCST     = require('yaml/dist/constants.js').Type;
+const YAMLCST     = { 'SEQ':'SEQ', 'MAP':'MAP'};
 const path        = require('path');
 const fs          = require('fs');
 
@@ -132,7 +132,7 @@ function unpack (data) {
         } else {
             visit.push(docindex);
             const {doc, incs = []} = data[docindex];
-            (doc || {})[ Symbol("doc") ] = docindex;
+            //(doc || {})[ Symbol("doc") ] = docindex;
             res = incs.reduce(
                 (doc, {index, incs}) => {
                     const incdoc = resolveIncs(index, visit);
@@ -215,3 +215,4 @@ function multiYamlLoader () {
 }
 
 module.exports = multiYamlLoader;
+
