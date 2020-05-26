@@ -1,0 +1,2 @@
+name: broken
+self: !include not-exists.yaml

@@ -1,7 +1,8 @@
 const YAML        = require('yaml');
-const YAMLCST     = { 'SEQ':'SEQ', 'MAP':'MAP'};
 const path        = require('path');
 const fs          = require('fs');
+const YIError     = require('./YamlIncludeError.js');
+const YAMLCST     = { 'SEQ':'SEQ', 'MAP':'MAP'};
 
 const getNStr = (node, next) => {
     const {type, contents, items} = node;
@@ -91,15 +92,6 @@ function syncParseYaml (cache) {
     return {...result, cache};
 };
 
-
-class YamlIncludeError extends Error {
-    constructor (err, fileName) {
-        super();
-        this.name = 'YamlIncludeError';
-        this.message =  `Error in ${fileName}:\n    > ${err}`;
-    }
-};
-
 const packIncsReducer = files => (packed,[key,incs]) => {
     const index = files.indexOf(key);
     packed.push({index, incs});
@@ -131,7 +123,6 @@ function unpack (data) {
         } else {
             visit.push(docindex);
             const {doc, incs = []} = data[docindex];
-            //(doc || {})[ Symbol("doc") ] = docindex;
             res = incs.reduce(
                 (doc, {index, incs}) => {
                     const incdoc = resolveIncs(index, visit);
@@ -176,7 +167,7 @@ function getModulePromise (state) {
                         ;
                     } catch (err) {
                         reject(
-                            new YamlIncludeError(err, cache.from || cache.resourcePath)
+                            new YIError(err, cache.from || cache.resourcePath)
                         );
                     }
                 }

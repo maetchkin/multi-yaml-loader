@@ -1,7 +1,9 @@
-const path   = require('path');
-const fs     = require('fs');
-const tmp    = require('tmp');
-const loader = require('..');
+const path    = require('path');
+const fs      = require('fs');
+const tmp     = require('tmp');
+const loader  = require('..');
+const YIError = require('../YamlIncludeError.js');
+
 
 function MockLoaderContext (file, resolve, reject) {
     this.resourcePath = path.resolve(__dirname, file);
@@ -53,5 +55,21 @@ test(
                 expect(res === res.self).toEqual(true);
             }
         )
+);
 
+
+test(
+    'not exists throws exception',
+    () =>   expect(
+                createLoading("not-exists.yaml")
+            )
+            .rejects.toThrow( YIError )
+);
+
+test(
+    'broken include throws exception',
+    () =>   expect(
+                createLoading("broken.yaml")
+            )
+            .rejects.toThrow( YIError )
 );
