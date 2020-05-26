@@ -1,4 +1,3 @@
-const loaderUtils = require('loader-utils');
 const YAML        = require('yaml');
 const YAMLCST     = { 'SEQ':'SEQ', 'MAP':'MAP'};
 const path        = require('path');
