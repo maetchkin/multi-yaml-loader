@@ -6,7 +6,8 @@
   "description": "YAML loader for webpack with !include support",
   "main": "index.js",
   "files": [
-    "index.js"
+    "index.js",
+    "YamlIncludeError.js"
   ],
   "repository": {
     "type": "git",
