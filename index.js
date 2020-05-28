@@ -193,7 +193,7 @@ function getModulePromise (state) {
 function multiYamlLoader () {
     const callback = this.async();
     const state = getLoaderState(this);
-    (addContextDependency in this) && this.addContextDependency(state.context);
+    ('addContextDependency' in this) && this.addContextDependency(state.context);
     getModulePromise(state)
         .then(
             res => callback( null, res )
