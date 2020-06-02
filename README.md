@@ -31,19 +31,29 @@ npm install multi-yaml-loader --save
 ```
 
 #### file.yaml
-```
+```yaml
 title: Main file
 sub: !include './relative/path/to/sub.yaml'
+# cycle includes also possible, for example
+# self: ./file.yaml
 ```
-
 
 #### src.js
 
-```
+```javascript
+/**
+ * Result by default contains JSON with included documents as objects crosslinks (maybe cyclic =)
+ */
 const yaml = require('./path/to/file.yaml');
 ```
+
+#### YamlIncludeError
+Module defines `YamlIncludeError extends Error`
 
 ### test
 ```
 npm test
 ```
+
+## LICENSE
+MIT
