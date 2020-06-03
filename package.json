@@ -29,5 +29,8 @@
   },
   "devDependencies": {
     "jest": "^26.0.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 }
