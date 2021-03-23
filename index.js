@@ -2,7 +2,7 @@ const YAML        = require('yaml');
 const path        = require('path');
 const fs          = require('fs');
 const YIError     = require('./YamlIncludeError.js');
-const YAMLCST     = { 'SEQ':'SEQ', 'MAP':'MAP'};
+const YAMLCST     = { 'SEQ':'SEQ', 'MAP':'MAP' };
 
 const getNStr = (node, next) => {
     const {type, contents, items} = node;
@@ -67,7 +67,10 @@ const getLoaderState =  ({ resourcePath, rootContext, context }) =>
                         ({ resourcePath, rootContext, context })
 ;
 
-const defaultOptions = {prettyErrors: true, keepCstNodes: true};
+const defaultOptions = {
+    prettyErrors: true,
+    keepCstNodes: true,
+};
 
 function syncLoadFile ({resourcePath}) {
     return fs.readFileSync(
@@ -99,9 +102,9 @@ const packIncsReducer = files => (packed,[key,incs]) => {
 };
 
 const packReducer = files => (packed,[key,{doc, incs = {}}]) => {
-    const index = files.indexOf(key);
+    const index       = files.indexOf(key);
     const incsEntries = Object.entries(incs);
-    packed[ index ] = {doc};
+    packed[ index ]   = {doc};
     if (incsEntries.length > 0) {
         packed[ index ].incs = incsEntries.reduce(packIncsReducer(files),[]);
     }
@@ -140,7 +143,46 @@ function unpack (data) {
         return res;
     };
 
-    return resolveIncs();
+    const MERGE_KEY = '<<<';
+
+    const isObj = v => typeof(v) === 'object' && !Array.isArray(v);
+
+    const resolveMerge = (node, visit = []) => {
+        let res;
+        if ( visit.includes(node) ){
+            res = node;
+        } else {
+            visit.push(node);
+            if ( isObj(node) ) {
+                res = Object.entries(node).reduce(
+                    (acc, [k, v]) => {
+                        if ( k.startsWith(MERGE_KEY) ) {
+                            const n = Object.assign(
+                                acc,
+                                resolveMerge(v, visit)
+                            );
+                            delete n[k];
+                            return n;
+                        } else {
+                            const n = Object.assign(
+                                acc,
+                                {[k]: resolveMerge(v, visit)}
+                            );
+                            return n;
+                        }
+                    }, node
+                );
+            } else {
+                res = node;
+            }
+        }
+
+        return res;
+    }
+
+    return  resolveMerge(
+                resolveIncs()
+            );
 }
 
 function getModulePromise (state) {

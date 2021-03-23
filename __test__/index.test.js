@@ -32,7 +32,7 @@ const createLoading = file =>
 test(
     'no include',
     () =>   expect(
-              createLoading("simple.yaml")
+                createLoading("simple.yaml")
             ).resolves.toEqual(
                 { name: 'simple' }
             )
@@ -41,7 +41,7 @@ test(
 test(
     'with include',
     () =>   expect(
-              createLoading("example.yaml")
+                createLoading("example.yaml")
             ).resolves.toEqual(
                 { name: 'example', content: { name: 'simple' } }
             )
@@ -50,11 +50,11 @@ test(
 
 test(
     'array include',
-    () => expect(
-            createLoading("array.yaml")
-        ).resolves.toEqual(
-            [{name:'item-1'},{name:'item-2'}]
-        )
+    () =>   expect(
+                createLoading("array.yaml")
+            ).resolves.toEqual(
+                [{name:'item-1'},{name:'item-2'}]
+            )
 );
 
 test(
@@ -82,4 +82,20 @@ test(
                 createLoading("broken.yaml")
             )
             .rejects.toThrow( YIError )
+);
+
+test(
+    'merge',
+    () => createLoading("merge.yaml")
+            .then(
+                res => {
+                    // console.log('merge', res);
+                    const {name, a, b, c} = res;
+                    expect(name).toEqual("merge");
+                    expect(a.name).toEqual("simple");
+                    expect(a.value).toEqual(false);
+                    expect(c.name).toEqual("merge");
+                    expect(c.a.name).toEqual("simple");
+                }
+            )
 );

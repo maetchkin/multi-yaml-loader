@@ -1,0 +1,14 @@
+name: merge
+a:
+  name: first
+  <<<1: !include 'simple.yaml'
+  <<<2:
+    value: true
+  <<<3:
+    value: false
+b:
+  name: second
+  <<<: !include 'simple.yaml'
+c:
+  name: third
+  <<<: !include 'merge.yaml'
