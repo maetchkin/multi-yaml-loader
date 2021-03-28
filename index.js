@@ -145,7 +145,7 @@ function unpack (data) {
 
     const MERGE_KEY = '<<<';
 
-    const isObj = v => typeof(v) === 'object' && !Array.isArray(v);
+    const isObj = v => v !== null && typeof(v) === 'object' && !Array.isArray(v);
 
     const resolveMerge = (node, visit = []) => {
         let res;
