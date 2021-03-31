@@ -1,0 +1,2 @@
+name: link-to-other
+content: !include ./path/to/other/example.yaml

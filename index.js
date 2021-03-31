@@ -202,7 +202,12 @@ function getModulePromise (state) {
                             .keys( result.incs )
                             .forEach(
                                 file => {
-                                    const add = { ...state, resourcePath:file, from:cache.resourcePath };
+                                    const add = {
+                                        ...state,
+                                        resourcePath: file,
+                                        from:         cache.resourcePath,
+                                        context:      path.dirname(file)
+                                    };
                                     fileQueue.push(add);
                                 }
                             )

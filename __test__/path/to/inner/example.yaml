@@ -1,0 +1,2 @@
+name: inner
+content: !include ../../../link-to-other.yaml

@@ -99,3 +99,13 @@ test(
                 }
             )
 );
+
+test(
+    'relative',
+    () => createLoading("./path/to/inner/example.yaml")
+            .then(
+                res => {
+                    expect(res.content.content.content.name).toEqual("simple");
+                }
+            )
+);
