@@ -1,8 +1,8 @@
 const path    = require('path');
 const fs      = require('fs');
 const tmp     = require('tmp');
-const loader  = require('..');
-const YIError = require('../YamlIncludeError.js');
+const Loader  = require('multi-yaml-loader');
+const {LoaderError} = Loader;
 
 
 function MockLoaderContext (file, resolve, reject) {
@@ -16,7 +16,7 @@ const createLoading = file =>
     new Promise(
         (resolve, reject) => {
             const ctx = new MockLoaderContext(file, resolve, reject);
-            loader.call(ctx);
+            Loader.call(ctx);
         }
     )
     .then(

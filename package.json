@@ -6,15 +6,17 @@
   "description": "YAML loader for webpack with !include support",
   "main": "index.js",
   "files": [
-    "index.js",
-    "YamlIncludeError.js"
+    "dist"
   ],
   "repository": {
     "type": "git",
     "url": "git://github.com/maetchkin/multi-yaml-loader.git"
   },
   "scripts": {
-    "test": "jest"
+    "check": "tsc --noEmit -w",
+    "tsc": "tsc",
+    "test": "jest",
+    "clean": "rm -rf package-lock.json node_modules"
   },
   "keywords": [
     "yaml",
@@ -28,9 +30,14 @@
     "yaml": "^1.10.0"
   },
   "devDependencies": {
-    "jest": "^26.0.1"
+    "@types/webpack": "^4.41.27",
+    "jest": "^26.0.1",
+    "webpack": "^4.46.0"
   },
   "engines": {
     "node": ">=14.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node"
   }
 }
