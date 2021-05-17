@@ -4,7 +4,7 @@
   "author": "Anton Kirshanov <maetchkin@gmail.com> (https://github.com/maetchkin)",
   "private": false,
   "description": "YAML loader for webpack with !include support",
-  "main": "index.js",
+  "main": "./dist/index.js",
   "files": [
     "dist"
   ],
@@ -15,6 +15,7 @@
   "scripts": {
     "check": "tsc --noEmit -w",
     "tsc": "tsc",
+    "pretest": "tsc",
     "test": "jest",
     "clean": "rm -rf package-lock.json node_modules"
   },
@@ -30,14 +31,20 @@
     "yaml": "^1.10.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.14.2",
+    "@babel/parser": "^7.14.2",
+    "@babel/types": "^7.14.2",
+    "@types/jest": "^26.0.23",
+    "@types/tmp": "^0.2.0",
     "@types/webpack": "^4.41.27",
-    "jest": "^26.0.1",
+    "babel-jest": "^26.6.3",
+    "jest": "^26.6.3",
+    "multi-yaml-loader": "file:./",
+    "ts-jest": "^26.5.6",
+    "typescript": "^4.2.4",
     "webpack": "^4.46.0"
   },
   "engines": {
     "node": ">=14.0.0"
-  },
-  "jest": {
-    "testEnvironment": "node"
   }
 }

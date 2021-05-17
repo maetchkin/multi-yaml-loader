@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
-    "outDir":           "./dist",
-    "rootDir":          "./src",
-    "lib":              ["ES2020"],
+    "outDir":            "dist",
+    "rootDir":           "src",
+    "lib":              ["ES2017"],
     "module":            "commonjs",
-    "target":            "ES2020",
+    "target":            "ES2017",
     "strict":             true,
     "moduleResolution":  "node",
     "noUnusedLocals":     true,
@@ -13,7 +13,5 @@
     "declaration":        true
   },
 
-  "files": [
-    "./src/index.ts"
-  ]
+  "include": ["src/**/*.ts"]
 }
