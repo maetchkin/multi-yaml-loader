@@ -13,10 +13,10 @@
     "url": "git://github.com/maetchkin/multi-yaml-loader.git"
   },
   "scripts": {
-    "check": "tsc --noEmit -w",
-    "tsc": "tsc",
-    "pretest": "tsc",
-    "test": "jest",
+    "check": "tsc -p src --noEmit -w",
+    "tsc": "tsc -p src",
+    "pretest": "npm run tsc",
+    "test": "jest __test__",
     "clean": "rm -rf package-lock.json node_modules"
   },
   "keywords": [

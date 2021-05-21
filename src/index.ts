@@ -1,8 +1,6 @@
-/// <reference types="node" />
-/// <reference types="@types/webpack" />
-
 import { loader }               from 'webpack';
-import {getOptions, OptionObject, parseQuery} from 'loader-utils';
+import {OptionObject,
+        getOptions, parseQuery} from 'loader-utils';
 import * as path                from 'path';
 import * as fs                  from 'fs';
 import * as YAML                from 'yaml';
@@ -10,23 +8,21 @@ import { Type }                 from 'yaml/util';
 import type { Schema }          from 'yaml/types';
 import type { CST }             from 'yaml/parse-cst';
 
-export type MaybeBoolFileIndex   = {filesIndex?: boolean};
-export type MaybeBoolFilesRoots  = {filesRoots?: boolean};
-export type MaybeSpace           = {space?:      boolean};
-export type LoaderOptions        = OptionObject & MaybeBoolFileIndex & MaybeBoolFilesRoots & MaybeSpace;
-
-export type MaybeHasFrom = { from?: string; };
+export type MaybeKeepFiles       = {keepFiles?:      boolean};
+export type MaybeKeepFilesRoots  = {keepFilesRoots?: boolean};
+export type MaybeHasSpace        = {space?:          boolean};
+export type MaybeHasFrom         = {from?:           string};
+export type HasRootContext       = {rootContext:     string};
+export type LoaderOptions        = OptionObject & MaybeKeepFiles & MaybeKeepFilesRoots & MaybeHasSpace & HasRootContext;
 export type LoaderState =
     Pick<loader.LoaderContext, "resourcePath" | "rootContext" | "context" | "resourceQuery"> &
     MaybeHasFrom
 ;
 export type IncDeep    = string | number;
 export type IncList    = IncDeep[][];
-export type IncMap     = Record<string, IncList >;
+export type IncMap     = Record<string, IncList>;
 export type HasIncMap  = {incs: IncMap;}
-export type HasIncList = {incs: IncList;}
-
-export type HasDoc    = {doc:  any;}
+export type HasDoc     = {doc:  any;}
 
 export type DocumentObject = HasIncMap & HasDoc & { state: LoaderState; };
 export type DocumentsMap = Record<string, DocumentObject>;
@@ -111,10 +107,9 @@ const tagInclude = ({incs, context}: HasIncMap & LoaderState): Schema.CustomTag 
         const ypath = includeYpath(cst);
         const {strValue} = cst as MaybeNullableStrValue;
         if (strValue !== null && strValue !== void(0) ) {
-            const file = path.join(context, strValue);
+            const file = path.join(context, strValue as string);
             incs[file] = incs[file] || [];
             incs[file].push( ypath );
-            //console.debug('YPATH', file, ypath);
         }
         return null;
     }
@@ -143,9 +138,7 @@ const getModulePromise = (state: LoaderState, options: LoaderOptions): Promise<s
             let cache: LoaderState | void;
             while ( (cache = fileQueue.pop()) ) {
                 const {resourcePath} = cache;
-                if (resourcePath in results) {
-                    continue;
-                } else {
+                if (!(resourcePath in results)) {
                     try {
                         const result = syncParseYaml(cache);
                         results[resourcePath] = result;
@@ -178,7 +171,10 @@ const getModulePromise = (state: LoaderState, options: LoaderOptions): Promise<s
         (results: DocumentsMap): string => {
             const {space} = options;
             const result = JSON.stringify(
-                pack(results, state.resourcePath, options), null, space ? 2 : 0);
+                pack(results, state.resourcePath, options),
+                null,
+                space ? 2 : 0
+            );
             console.log( "pack", result);
             return result;
         }
@@ -232,8 +228,14 @@ type HasRoot = {
 type Packed = HasDoc & HasIncMap;
 type PackedDocumentsMap = Record<string, Packed> & HasRoot
 
-const getId = (files: string[], {filesIndex}: LoaderOptions) => (fileName: string): string =>
-    filesIndex ? fileName : `${files.indexOf(fileName)}`
+const getId = (files: string[], {keepFiles, keepFilesRoots, rootContext}: LoaderOptions) => (fileName: string): string =>
+    keepFiles
+        ? (
+            keepFilesRoots
+                ? fileName
+                : path.normalize(fileName.replace(rootContext, '.') )
+        )
+        : `${files.indexOf(fileName)}`
 ;
 
 function pack (data: DocumentsMap, root: string, options: LoaderOptions ): [PackedDocumentsMap, string] {
@@ -242,7 +244,7 @@ function pack (data: DocumentsMap, root: string, options: LoaderOptions ): [Pack
     const packed = Object.entries(data).reduce(
         packReducer(idByFile), {}
     );
-    return [packed, root];
+    return [packed, idByFile(root)];
 }
 /*
 function unpack (data: DocumentsMap) {
@@ -323,7 +325,8 @@ const MYLoader = function (this: loader.LoaderContext) {
 
     const options: LoaderOptions = {
         ...getOptions(this),
-        ...parseQuery(this.resourceQuery)
+        ...parseQuery(this.resourceQuery),
+           rootContext
     };
 
     getModulePromise(state, options)
@@ -341,6 +344,6 @@ const MYLoader = function (this: loader.LoaderContext) {
 }
 
 
-
+// noinspection JSUnusedGlobalSymbols
 export default MYLoader;
 
