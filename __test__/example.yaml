@@ -1,2 +1,9 @@
 name: example
 content: !include simple.yaml
+content2:
+  a:
+    b:
+      c: !include simple.yaml
+      d:
+        - !include link-to-other.yaml
+        - !include simple.yaml

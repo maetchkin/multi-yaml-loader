@@ -1,32 +1,37 @@
 /// <reference types="node" />
 /// <reference types="@types/webpack" />
 
-import { loader }       from 'webpack';
-import * as path        from 'path';
-import * as fs          from 'fs';
-import * as YAML        from 'yaml';
-import { Type }         from 'yaml/util';
-import type { Schema }  from 'yaml/types';
-import type { CST }     from 'yaml/parse-cst';
+import { loader }               from 'webpack';
+import {getOptions, OptionObject, parseQuery} from 'loader-utils';
+import * as path                from 'path';
+import * as fs                  from 'fs';
+import * as YAML                from 'yaml';
+import { Type }                 from 'yaml/util';
+import type { Schema }          from 'yaml/types';
+import type { CST }             from 'yaml/parse-cst';
 
+export type MaybeBoolFileIndex   = {filesIndex?: boolean};
+export type MaybeBoolFilesRoots  = {filesRoots?: boolean};
+export type MaybeSpace           = {space?:      boolean};
+export type LoaderOptions        = OptionObject & MaybeBoolFileIndex & MaybeBoolFilesRoots & MaybeSpace;
 
 export type MaybeHasFrom = { from?: string; };
 export type LoaderState =
-    Pick<loader.LoaderContext, "resourcePath" | "rootContext" | "context"> &
+    Pick<loader.LoaderContext, "resourcePath" | "rootContext" | "context" | "resourceQuery"> &
     MaybeHasFrom
 ;
-
-export type IncMap     = Record<string, string[] >;
-/*export type IncList    = string[][];*/
+export type IncDeep    = string | number;
+export type IncList    = IncDeep[][];
+export type IncMap     = Record<string, IncList >;
 export type HasIncMap  = {incs: IncMap;}
-/*export type HasIncList = {incs: IncList;}*/
+export type HasIncList = {incs: IncList;}
 
 export type HasDoc    = {doc:  any;}
-export type DocIncsStructure = HasIncMap & HasDoc;
-export type DocumentObject = DocIncsStructure & { state: LoaderState; };
+
+export type DocumentObject = HasIncMap & HasDoc & { state: LoaderState; };
 export type DocumentsMap = Record<string, DocumentObject>;
 
-const getNStr = (node: YAML.CST.Node, next: YAML.CST.Node): string | number | null => {
+const getNStr = (node: YAML.CST.Node, next: YAML.CST.Node): IncDeep | null => {
     const {type} = node;
     let res = null;
     switch (type) {
@@ -59,13 +64,13 @@ const getNStr = (node: YAML.CST.Node, next: YAML.CST.Node): string | number | nu
 }
 
 const traverseCST = (
-    acc:   string[],
+    acc:   IncDeep[],
     node:  YAML.CST.Node,
     ni:    number,
     arr:   YAML.CST.Node[]
 ) => {
-    const p = getNStr( node, arr[ni+1] );
-    node.type && p !== null && acc.push(`${p}`);
+    const deep = getNStr( node, arr[ni+1] );
+    node.type && deep !== null && acc.push(deep);
     return acc;
 };
 
@@ -99,23 +104,24 @@ type MaybeNullableStrValue = {
     strValue?: string | null | void
 }
 
-const tagInclude = ({incs, ...cache}: HasIncMap & LoaderState): Schema.CustomTag => ({
+const tagInclude = ({incs, context}: HasIncMap & LoaderState): Schema.CustomTag => ({
     identify: () => false,
     tag: '!include',
     resolve: (_doc, cst) => {
         const ypath = includeYpath(cst);
         const {strValue} = cst as MaybeNullableStrValue;
         if (strValue !== null && strValue !== void(0) ) {
-            const file   = path.join( cache.context, strValue);
+            const file = path.join(context, strValue);
             incs[file] = incs[file] || [];
-            incs[file].push( ...ypath );
+            incs[file].push( ypath );
+            //console.debug('YPATH', file, ypath);
         }
         return null;
     }
 });
 
 const multiYamlParse = (cache: LoaderState, content: string) => {
-    const incs    = {};
+    const incs: IncMap    = {};
     const tagInc  = tagInclude({ ...cache, incs });
     const options: YAML.Options = { ...defaultOptions,  customTags: [ tagInc ]};
     const doc     = YAML.parse( content, options );
@@ -129,7 +135,7 @@ const syncParseYaml = (state: LoaderState): DocumentObject => {
     return {...result, state};
 }
 
-const getModulePromise = (state: LoaderState): Promise<string> =>
+const getModulePromise = (state: LoaderState, options: LoaderOptions): Promise<string> =>
     new Promise<DocumentsMap>(
         (resolve, reject) => {
             const fileQueue = [state];
@@ -170,12 +176,14 @@ const getModulePromise = (state: LoaderState): Promise<string> =>
     )
     .then(
         (results: DocumentsMap): string => {
-            console.log("DocumentsMap", results);
-            return 'module.exports = "DocumentsMap";'
+            const {space} = options;
+            const result = JSON.stringify(
+                pack(results, state.resourcePath, options), null, space ? 2 : 0);
+            console.log( "pack", result);
+            return result;
         }
     )
-    /*
-    .then(
+    /*.then(
         (results: DocumentsMap): string => {
             const res = JSON.stringify(
                 pack(results, state.resourcePath)
@@ -185,7 +193,7 @@ const getModulePromise = (state: LoaderState): Promise<string> =>
     )
     .then(
         packed => `
-            ${ unpack }
+            $\{ unpack }
             const packed = ${ packed };
             const res = unpack(packed);
             module.exports = res;
@@ -193,41 +201,50 @@ const getModulePromise = (state: LoaderState): Promise<string> =>
     )*/
 ;
 
-/*type IndexIncsStructure = {
-    index: number
-} & HasIncMap;*/
 
-/*const packIncsReducer = (files: string[]) => (
-    packed: IndexIncsStructure[],
-    [key, incs]: [string, any]
-) => {
-    const index = files.indexOf(key);
-    packed.push({index, incs});
-    return packed;
-};
+const packIncsReducer = (idByFile: (f: string) => string) => (
+    packed: Record<string, IncList>,
+    [fileName, incs]: [string, IncList]
+): Record <string, IncList> => ({
+    ...packed,
+    [idByFile(fileName)]: incs
+});
 
-const packReducer = (files: string[]) =>
+const packReducer = (idByFile: (f: string) => string) =>
 (
-    packed: DocIncsStructure[],
-    [key, {doc, incs = {}}]: [string, DocumentObject]
-): HasDoc & HasIncList => {
-    const index       = files.indexOf(key);
-    const incsEntries = Object.entries(incs);
-    packed[ index ]   = {
+    packed: PackedDocumentsMap,
+    [fileName, {doc, incs = {}}]: [string, Packed]
+): PackedDocumentsMap => {
+    packed[ idByFile(fileName) ] = {
         doc,
-        incs: incsEntries.reduce(
-            packIncsReducer(files), []
+        incs: Object.entries(incs).reduce(
+            packIncsReducer(idByFile),
+            {}
         )
     };
     return packed;
-};*/
+};
 
-/*function pack (data: DocumentsMap, root: string): DocIncsStructure[] {
+type HasRoot = {
+    "."?: string
+};
+
+type Packed = HasDoc & HasIncMap;
+type PackedDocumentsMap = Record<string, Packed> & HasRoot
+
+const getId = (files: string[], {filesIndex}: LoaderOptions) => (fileName: string): string =>
+    filesIndex ? fileName : `${files.indexOf(fileName)}`
+;
+
+function pack (data: DocumentsMap, root: string, options: LoaderOptions ): [PackedDocumentsMap, string] {
     const files  = Object.keys(data).sort( f1 => f1 === root ? -1 : 1 );
-    const packed = Object.entries(data).reduce( packReducer(files), []);
-    return packed;
+    const idByFile = getId(files, options);
+    const packed = Object.entries(data).reduce(
+        packReducer(idByFile), {}
+    );
+    return [packed, root];
 }
-
+/*
 function unpack (data: DocumentsMap) {
 
     const resolveIncs = (docindex = 0, visit: number[] = []) => {
@@ -296,15 +313,20 @@ function unpack (data: DocumentsMap) {
             );
 }*/
 
-
 const MYLoader = function (this: loader.LoaderContext) {
     const callback = this.async();
-    const { resourcePath, rootContext, context } = this;
-    const state: LoaderState = { resourcePath, rootContext, context };
+    const { resourcePath, rootContext, context, resourceQuery } = this;
+    const state: LoaderState = { resourcePath, rootContext, context, resourceQuery };
     if (this.addContextDependency) {
         this.addContextDependency(context);
     }
-    getModulePromise(state)
+
+    const options: LoaderOptions = {
+        ...getOptions(this),
+        ...parseQuery(this.resourceQuery)
+    };
+
+    getModulePromise(state, options)
         .then(
             (result: string) => {
                 result && callback
@@ -317,6 +339,8 @@ const MYLoader = function (this: loader.LoaderContext) {
         );
     return;
 }
+
+
 
 export default MYLoader;
 
