@@ -130,6 +130,20 @@ const syncParseYaml = (state: LoaderState): DocumentObject => {
     return {...result, state};
 }
 
+const getFullResultStr = (unpack: Function, packed: string) => `
+    ${ unpack }
+    const packed = ${ packed };
+    const result = unpack(packed);
+    module.exports = { result, packed, unpack };
+`;
+
+const getResultStr = (unpack: Function, packed: string) => `
+    ${ unpack }
+    const packed = ${ packed };
+    const result = unpack(packed);
+    module.exports = { result };
+`;
+
 const getModulePromise = (state: LoaderState, options: LoaderOptions): Promise<string> =>
     new Promise<DocumentsMap>(
         (resolve, reject) => {
@@ -175,27 +189,16 @@ const getModulePromise = (state: LoaderState, options: LoaderOptions): Promise<s
                 null,
                 space ? 2 : 0
             );
-            console.log( "pack", result);
             return result;
         }
     )
-    /*.then(
-        (results: DocumentsMap): string => {
-            const res = JSON.stringify(
-                pack(results, state.resourcePath)
-            );
-            return res;
-        }
-    )
     .then(
-        packed => `
-            $\{ unpack }
-            const packed = ${ packed };
-            const res = unpack(packed);
-            module.exports = res;
-        `
-    )*/
+        packed => options.keepFiles
+                    ? getFullResultStr(unpack, packed)
+                    : getResultStr(unpack, packed)
+    )
 ;
+
 
 
 const packIncsReducer = (idByFile: (f: string) => string) => (
@@ -221,12 +224,9 @@ const packReducer = (idByFile: (f: string) => string) =>
     return packed;
 };
 
-type HasRoot = {
-    "."?: string
-};
-
 type Packed = HasDoc & HasIncMap;
-type PackedDocumentsMap = Record<string, Packed> & HasRoot
+type PackedDocumentsMap = Record<string, Packed>;
+type PackedResult = [PackedDocumentsMap, string];
 
 const getId = (files: string[], {keepFiles, keepFilesRoots, rootContext}: LoaderOptions) => (fileName: string): string =>
     keepFiles
@@ -238,7 +238,7 @@ const getId = (files: string[], {keepFiles, keepFilesRoots, rootContext}: Loader
         : `${files.indexOf(fileName)}`
 ;
 
-function pack (data: DocumentsMap, root: string, options: LoaderOptions ): [PackedDocumentsMap, string] {
+function pack (data: DocumentsMap, root: string, options: LoaderOptions ): PackedResult {
     const files  = Object.keys(data).sort( f1 => f1 === root ? -1 : 1 );
     const idByFile = getId(files, options);
     const packed = Object.entries(data).reduce(
@@ -246,8 +246,74 @@ function pack (data: DocumentsMap, root: string, options: LoaderOptions ): [Pack
     );
     return [packed, idByFile(root)];
 }
+
+function unpack (packed: PackedResult): any {
+    const [ docMap, root ] = packed;
+
+    const incsReducer = (visit: Record<string, boolean>) => (doc: any, [docptr, incs]: [string, IncList] ): any => {
+        const incdoc = resolveIncs(docptr, visit);
+        incs.forEach(
+            (inc) => {
+                let ptr = doc as Record<IncDeep, any>;
+                while ( inc.length > 1 ) {
+                    ptr = ptr[ inc.shift() as IncDeep ];
+                }
+                ptr[ inc.shift() as IncDeep ] = incdoc;
+            }
+        );
+        return doc;
+    }
+
+    const resolveIncs = (docptr: string, visit: Record<string, boolean> = {} ) => {
+        let res;
+        if ( docptr in visit ) {
+            res = docMap[docptr].doc;
+        } else {
+            visit[docptr] = true;
+            const {doc, incs} = docMap[docptr];
+            res = Object.entries(incs).reduce( incsReducer(visit) , doc)
+        }
+        return res;
+    }
+
+    return resolveIncs(root);
+}
+
+const MYLoader = function (this: loader.LoaderContext) {
+    const callback = this.async();
+    const { resourcePath, rootContext, context, resourceQuery } = this;
+    const state: LoaderState = { resourcePath, rootContext, context, resourceQuery };
+    if (this.addContextDependency) {
+        this.addContextDependency(context);
+    }
+
+    const options: LoaderOptions = {
+        ...getOptions(this),
+        ...parseQuery(this.resourceQuery),
+           rootContext
+    };
+
+    getModulePromise(state, options)
+        .then(
+            (result: string) => {
+                result && callback
+                    ? callback(null, result)
+                    : void(0)
+            }
+        )
+        .catch(
+            callback
+        );
+    return;
+}
+
+
+// noinspection JSUnusedGlobalSymbols
+export default MYLoader;
+
+
 /*
-function unpack (data: DocumentsMap) {
+function unpack2 (data: DocumentsMap) {
 
     const resolveIncs = (docindex = 0, visit: number[] = []) => {
         let res;
@@ -313,37 +379,5 @@ function unpack (data: DocumentsMap) {
     return  resolveMerge(
                 resolveIncs()
             );
-}*/
-
-const MYLoader = function (this: loader.LoaderContext) {
-    const callback = this.async();
-    const { resourcePath, rootContext, context, resourceQuery } = this;
-    const state: LoaderState = { resourcePath, rootContext, context, resourceQuery };
-    if (this.addContextDependency) {
-        this.addContextDependency(context);
-    }
-
-    const options: LoaderOptions = {
-        ...getOptions(this),
-        ...parseQuery(this.resourceQuery),
-           rootContext
-    };
-
-    getModulePromise(state, options)
-        .then(
-            (result: string) => {
-                result && callback
-                    ? callback(null, result)
-                    : void(0)
-            }
-        )
-        .catch(
-            callback
-        );
-    return;
-}
-
-
-// noinspection JSUnusedGlobalSymbols
-export default MYLoader;
+}    */
 

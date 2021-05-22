@@ -1,78 +1,81 @@
 import {createLoading} from "./mock-loader";
+import {IncludeError}  from 'multi-yaml-loader';
 
-test(
-    'no include RC',
-    () =>   expect(
-                    (createLoading("example.yaml", {resourceQuery: "?keepFiles&keepFiles&space"}), true)
-                ).toEqual(
-                    true
-                )
-                /*expect(
-                    createLoading("simple.yaml")
-                ).resolves.toEqual(
-                    { name: 'simple' }
-                )*/
-);
 
-/*
 test(
     'no include',
-    () =>   expect(
-                    createLoading("simple.yaml")
-                ).resolves.toEqual(
-                    { name: 'simple' }
-                )
-);*/
+    () => createLoading("documents/simple.yaml")
+        .then(
+            data => expect(data).toHaveProperty(
+                'result',
+                { name: 'simple' }
+            )
+        )
+);
 
-
-
-
-/*test(
+test(
     'with include',
-    () =>   expect(
-                createLoading("example.yaml")
-            ).resolves.toEqual(
+    () => createLoading("documents/example.yaml")
+        .then(
+            data => expect(data).toHaveProperty(
+                'result',
                 { name: 'example', content: { name: 'simple' } }
             )
-);*/
+        )
+);
 
-/*
 
 test(
     'array include',
-    () =>   expect(
-                createLoading("array.yaml")
-            ).resolves.toEqual(
+    () => createLoading("documents/array.yaml")
+        .then(
+            data => expect(data).toHaveProperty(
+                'result',
                 [{name:'item-1'},{name:'item-2'}]
             )
+        )
 );
 
 test(
     'cycle include',
-    () => createLoading("cycle.yaml")
+    () => createLoading("documents/cycle.yaml")
+        .then(
+            data => {
+                expect(data.result === data.result.self).toEqual(true);
+            }
+        )
+);
+
+
+test(
+    'not exists throws IncludeError',
+    () => expect( createLoading("documents/not-exists.yaml") )
+            .rejects.toThrow( IncludeError )
+);
+
+
+test(
+    'broken include throws IncludeError',
+    () =>   expect(
+                createLoading("documents/broken.yaml")
+            )
+            .rejects.toThrow( IncludeError )
+);
+
+
+test(
+    'relative',
+    () => createLoading("./documents/path/to/inner/example.yaml")
             .then(
-                res => {
-                    expect(res === res.self).toEqual(true);
+                data => {
+                    expect(data.result.content.content.content.name).toEqual("simple");
                 }
             )
 );
 
+/*
 
-test(
-    'not exists throws exception',
-    () =>   expect(
-                createLoading("not-exists.yaml")
-            )
-            .rejects.toThrow( YIError )
-);
 
-test(
-    'broken include throws exception',
-    () =>   expect(
-                createLoading("broken.yaml")
-            )
-            .rejects.toThrow( YIError )
-);
 
 test(
     'merge',
@@ -89,13 +92,4 @@ test(
                 }
             )
 );
-
-test(
-    'relative',
-    () => createLoading("./path/to/inner/example.yaml")
-            .then(
-                res => {
-                    expect(res.content.content.content.name).toEqual("simple");
-                }
-            )
-);*/
+*/
