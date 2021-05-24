@@ -1,6 +1,29 @@
-import {createLoading} from "./mock-loader";
-import {IncludeError}  from 'multi-yaml-loader';
+import * as webpack                         from 'webpack';
+import * as fs                              from 'fs';
+import * as tmp                             from 'tmp';
+import Loader, {IncludeError}               from 'multi-yaml-loader';
+import {MockLoaderContext}                  from './mock-loader';
+import type {LoaderOptionsQuery}            from './mock-loader';
 
+import LoaderContext = webpack.loader.LoaderContext;
+
+export const createLoading = (file: string, options?: LoaderOptionsQuery) =>
+    new Promise<string>(
+        (resolve, reject) => {
+            const ctx = new MockLoaderContext(file, resolve, reject, options || {});
+            Loader.call(ctx as LoaderContext);
+        }
+    )
+        .then(
+            (moduleYamlString: string): any => {
+                const tmpobj = tmp.fileSync();
+                fs.writeSync(tmpobj.fd, moduleYamlString);
+                const content: any = require(tmpobj.name);
+                //expect('').toEqual( true );
+                return content;
+            }
+        )
+;
 
 test(
     'no include',

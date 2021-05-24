@@ -1,11 +1,11 @@
 import * as path                            from 'path';
-import * as fs                              from 'fs';
-import * as tmp                             from 'tmp';
-import * as webpack                         from 'webpack';
-import Loader                               from 'multi-yaml-loader';
 import type {LoaderState, LoaderOptions}    from 'multi-yaml-loader';
 
-import LoaderContext = webpack.loader.LoaderContext;
+
+export type LoaderOptionsQuery = {
+    options?: LoaderOptions;
+    resourceQuery?: string;
+}
 
 export class MockLoaderContext implements LoaderState {
     public resourceQuery: string;
@@ -28,31 +28,8 @@ export class MockLoaderContext implements LoaderState {
             err
                 ? reject(err)
                 : res
-                ? resolve(res)
-                : reject(new Error('no result'))
+                    ? resolve(res)
+                    : reject(new Error('no result'))
         };
     }
 }
-
-export type LoaderOptionsQuery = {
-    options?: LoaderOptions;
-    resourceQuery?: string;
-}
-
-export const createLoading = (file: string, options?: LoaderOptionsQuery) =>
-    new Promise<string>(
-        (resolve, reject) => {
-            const ctx = new MockLoaderContext(file, resolve, reject, options || {});
-            Loader.call(ctx as LoaderContext);
-        }
-    )
-        .then(
-            (moduleYamlString: string): any => {
-                const tmpobj = tmp.fileSync();
-                fs.writeSync(tmpobj.fd, moduleYamlString);
-                const content: any = require(tmpobj.name);
-                //expect('').toEqual( true );
-                return content;
-            }
-        )
-;

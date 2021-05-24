@@ -27,6 +27,13 @@ export type HasDoc     = {doc:  any;}
 export type DocumentObject = HasIncMap & HasDoc & { state: LoaderState; };
 export type DocumentsMap = Record<string, DocumentObject>;
 
+export type Packed = HasDoc & HasIncMap;
+export type PackedDocumentsMap = Record<string, Packed>;
+export type PackedResult = [PackedDocumentsMap, string];
+export type MaybeNullableStrValue = {
+    strValue?: string | null | void
+}
+
 const getNStr = (node: YAML.CST.Node, next: YAML.CST.Node): IncDeep | null => {
     const {type} = node;
     let res = null;
@@ -96,9 +103,7 @@ const defaultOptions = {
     keepCstNodes: true,
 };
 
-type MaybeNullableStrValue = {
-    strValue?: string | null | void
-}
+
 
 const tagInclude = ({incs, context}: HasIncMap & LoaderState): Schema.CustomTag => ({
     identify: () => false,
@@ -216,24 +221,22 @@ const packReducer = (idByFile: (f: string) => string) =>
 ): PackedDocumentsMap => {
     packed[ idByFile(fileName) ] = {
         doc,
-        incs: Object.entries(incs).reduce(
-            packIncsReducer(idByFile),
-            {}
-        )
+        incs:   Object.entries(incs).reduce(
+                    packIncsReducer(idByFile),
+                    {}
+                )
     };
     return packed;
 };
-
-type Packed = HasDoc & HasIncMap;
-type PackedDocumentsMap = Record<string, Packed>;
-type PackedResult = [PackedDocumentsMap, string];
 
 const getId = (files: string[], {keepFiles, keepFilesRoots, rootContext}: LoaderOptions) => (fileName: string): string =>
     keepFiles
         ? (
             keepFilesRoots
                 ? fileName
-                : path.normalize(fileName.replace(rootContext, '.') )
+                : path.normalize(
+                    fileName.replace(rootContext, '.')
+                )
         )
         : `${files.indexOf(fileName)}`
 ;
@@ -249,7 +252,6 @@ function pack (data: DocumentsMap, root: string, options: LoaderOptions ): Packe
 
 function unpack (packed: PackedResult): any {
     const [ docMap, root ] = packed;
-
     const incsReducer = (visit: Record<string, boolean>) => (doc: any, [docptr, incs]: [string, IncList] ): any => {
         const incdoc = resolveIncs(docptr, visit);
         incs.forEach(
@@ -263,7 +265,6 @@ function unpack (packed: PackedResult): any {
         );
         return doc;
     }
-
     const resolveIncs = (docptr: string, visit: Record<string, boolean> = {} ) => {
         let res;
         if ( docptr in visit ) {
@@ -275,7 +276,6 @@ function unpack (packed: PackedResult): any {
         }
         return res;
     }
-
     return resolveIncs(root);
 }
 
@@ -289,7 +289,7 @@ const MYLoader = function (this: loader.LoaderContext) {
 
     const options: LoaderOptions = {
         ...getOptions(this),
-        ...parseQuery(this.resourceQuery),
+        ...parseQuery(this.resourceQuery || '?'),
            rootContext
     };
 
