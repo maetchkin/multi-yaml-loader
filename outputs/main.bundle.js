@@ -119,7 +119,35 @@
         }
         return res;
     };
-    return resolveIncs(root);
+    const MERGE_KEY = '<<<';
+    const isObj = (v) => v !== null && typeof (v) === 'object' && !Array.isArray(v);
+    const resolveMerge = (node, visit = []) => {
+        let res;
+        if (visit.includes(node)) {
+            res = node;
+        }
+        else {
+            visit.push(node);
+            if (isObj(node)) {
+                res = Object.entries(node).reduce((acc, [k, v]) => {
+                    if (k.startsWith(MERGE_KEY)) {
+                        const n = Object.assign(acc, resolveMerge(v, visit));
+                        delete n[k];
+                        return n;
+                    }
+                    else {
+                        const n = Object.assign(acc, { [k]: resolveMerge(v, visit) });
+                        return n;
+                    }
+                }, node);
+            }
+            else {
+                res = node;
+            }
+        }
+        return res;
+    };
+    return resolveMerge(resolveIncs(root));
 }
     const packed = [
   {

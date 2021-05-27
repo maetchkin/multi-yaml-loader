@@ -276,7 +276,45 @@ function unpack (packed: PackedResult): any {
         }
         return res;
     }
-    return resolveIncs(root);
+
+    const MERGE_KEY = '<<<';
+
+    const isObj = (v: any): boolean => v !== null && typeof(v) === 'object' && !Array.isArray(v);
+
+    const resolveMerge = (node: any, visit: any[] = []): any => {
+        let res;
+        if ( visit.includes(node) ){
+            res = node;
+        } else {
+            visit.push(node);
+            if ( isObj(node) ) {
+                res = Object.entries(node).reduce(
+                    (acc, [k, v]) => {
+                        if ( k.startsWith(MERGE_KEY) ) {
+                            const n = Object.assign(
+                                acc,
+                                resolveMerge(v, visit)
+                            );
+                            delete n[k];
+                            return n;
+                        } else {
+                            const n = Object.assign(
+                                acc,
+                                {[k]: resolveMerge(v, visit)}
+                            );
+                            return n;
+                        }
+                    }, node
+                );
+            } else {
+                res = node;
+            }
+        }
+
+        return res;
+    }
+
+    return resolveMerge( resolveIncs(root) );
 }
 
 const MYLoader = function (this: loader.LoaderContext) {

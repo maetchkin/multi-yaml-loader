@@ -96,17 +96,15 @@ test(
             )
 );
 
-/*
 
 
 
 test(
     'merge',
-    () => createLoading("merge.yaml")
+    () => createLoading("./documents/merge.yaml")
             .then(
-                res => {
-                    // console.log('merge', res);
-                    const {name, a, b, c} = res;
+                data => {
+                    const {name, a, b, c} = data.result;
                     expect(name).toEqual("merge");
                     expect(a.name).toEqual("simple");
                     expect(a.value).toEqual(false);
@@ -115,4 +113,3 @@ test(
                 }
             )
 );
-*/
