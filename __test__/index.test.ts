@@ -96,9 +96,6 @@ test(
             )
 );
 
-
-
-
 test(
     'merge',
     () => createLoading("./documents/merge.yaml")

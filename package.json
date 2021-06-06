@@ -16,7 +16,7 @@
     "check": "tsc -p src --noEmit -w",
     "tsc": "tsc -p src",
     "pretest": "npm run tsc",
-    "test": "jest __test__",
+    "test": "jest --runInBand --detectOpenHandles __test__ ",
     "clean": "rm -rf package-lock.json node_modules"
   },
   "keywords": [
