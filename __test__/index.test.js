@@ -109,3 +109,13 @@ test(
                 }
             )
 );
+
+test(
+    'root',
+    () => createLoading("./path/to/root/contains-root-include.yaml")
+            .then(
+                res => {
+                    expect(res.content.name).toEqual("simple");
+                }
+            )
+);

@@ -23,8 +23,13 @@ const getNStr = (node, next) => {
     return {type, res};
 }
 
-const resolveInclude = ({context}, inc) => path.join(context, inc);
+const resolveInclude = (cache, inc) => {
+    const {context, repo} = cache;
+    return path.join( inc[0] === '/' ? repo : context, inc);
+}
+
 const notNull = n => n !== null;
+
 const extractRes = ({res}) => res;
 
 const traverseCST = (acc, n, ni, arr) => {
@@ -63,8 +68,18 @@ const tagInclude = ({incs, ...cache}) => ({
     }
 });
 
+const findRepoByContext = (context) =>
+    context
+        .split('/')
+        .filter( p=>!!p )
+        .map( (p, pi, arr) => '/' + [...[...arr].slice(0,pi), p].join('/') )
+        .reverse()
+        .find( p => fs.existsSync( path.join(p,'package.json') ) )
+;
+
+
 const getLoaderState =  ({ resourcePath, rootContext, context }) =>
-                        ({ resourcePath, rootContext, context })
+                        ({ resourcePath, rootContext, context, repo: findRepoByContext(context) })
 ;
 
 const defaultOptions = {
@@ -252,4 +267,3 @@ function multiYamlLoader () {
 }
 
 module.exports = multiYamlLoader;
-

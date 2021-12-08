@@ -1,0 +1,2 @@
+name: root include example
+content: !include /__test__/simple.yaml
