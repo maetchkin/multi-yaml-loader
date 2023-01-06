@@ -14,7 +14,6 @@
     "tsc": "tsc -p src",
     "prepare": "npm run tsc",
     "pretest": "npm run tsc",
-    "postinstall": "npm run tsc",
     "test": "jest --runInBand --detectOpenHandles __test__ ",
     "clean": "rm -rf package-lock.json node_modules"
   },
