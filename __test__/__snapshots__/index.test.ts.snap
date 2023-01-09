@@ -1,0 +1,18 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`!md: md-include-content 1`] = `
+"<p><strong><em>MD Example</em></strong></p>
+<pre><code>🐞 content 
+</code></pre><ul>
+<li>item</li>
+<li>item</li>
+<li>item</li>
+</ul>
+<pre><code class=\\"lang-javascript\\">const a = &#39;string&#39;;
+function b (arg) {
+    console.log(&#39;b&#39;, arg)
+}
+b(a);
+</code></pre>
+"
+`;

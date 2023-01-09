@@ -12,14 +12,16 @@ export class MockLoaderContext implements LoaderState {
     public resourcePath:  string;
     public rootContext:   string;
     public context:       string;
+    public query:         any;
     public async: () => (err: Error | null | undefined, res: string | undefined) => void;
 
     constructor(
         file:     string,
         resolve: (res: string) => void,
         reject:  (err: Error | null | undefined) => void,
-        {resourceQuery = '?'}: LoaderOptionsQuery
+        {resourceQuery = '?', options}: LoaderOptionsQuery
     ) {
+        this.query         = options || void(0);
         this.resourceQuery = resourceQuery;
         this.resourcePath  = path.resolve(__dirname, file);
         this.rootContext   = path.resolve(process.env.INIT_CWD || __dirname);

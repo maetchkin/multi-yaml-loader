@@ -20,7 +20,7 @@ test(
         return compile(compiler)
             .then(
                 (stats: Stats) => {
-                    console.log('stats', stats.toString() );
+                    //console.log('stats', stats.toString() );
                     const code = stats?.compilation?.assets;
                     expect(code).toMatchSnapshot("documents-simple");
                 }
@@ -28,4 +28,3 @@ test(
         ;
     }
 );
-

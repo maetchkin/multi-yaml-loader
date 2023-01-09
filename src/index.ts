@@ -1,8 +1,15 @@
+// @ts-ignore
 import { loader }               from 'webpack';
-import {OptionObject,
-        getOptions, parseQuery} from 'loader-utils';
+// @ts-ignore
+import {getOptions, parseQuery} from 'loader-utils';
+// @ts-ignore
 import * as path                from 'path';
+// @ts-ignore
 import * as fs                  from 'fs';
+// @ts-ignore
+import marked                   from 'marked';
+
+
 import * as YAML                from 'yaml';
 import { Type }                 from 'yaml/util';
 import type { Schema }          from 'yaml/types';
@@ -13,11 +20,21 @@ export type MaybeKeepFilesRoots  = {keepFilesRoots?: boolean};
 export type MaybeHasSpace        = {space?:          boolean};
 export type MaybeHasFrom         = {from?:           string};
 export type HasRootContext       = {rootContext:     string};
-export type LoaderOptions        = OptionObject & MaybeKeepFiles & MaybeKeepFilesRoots & MaybeHasSpace & HasRootContext;
+export type MaybeHasRootContext  = Partial<HasRootContext>;
+export type LoaderOptions        = MaybeKeepFiles &
+                                   MaybeKeepFilesRoots &
+                                   MaybeHasSpace &
+                                   MaybeHasRootContext &
+                                   MaybeHasCustomTags
+;
+
+export type MaybeHasCustomTags   = {customTags?: Schema.CustomTag[]};
+
 export type LoaderState =
     Pick<loader.LoaderContext, "resourcePath" | "rootContext" | "context" | "resourceQuery"> &
     MaybeHasFrom
 ;
+
 export type IncDeep    = string | number;
 export type IncList    = IncDeep[][];
 export type IncMap     = Record<string, IncList>;
@@ -32,6 +49,9 @@ export type PackedDocumentsMap = Record<string, Packed>;
 export type PackedResult = [PackedDocumentsMap, string];
 export type MaybeNullableStrValue = {
     strValue?: string | null | void
+}
+export type HasTagStr = {
+    tag: string
 }
 
 const getNStr = (node: YAML.CST.Node, next: YAML.CST.Node): IncDeep | null => {
@@ -105,9 +125,9 @@ const defaultOptions = {
 
 
 
-const tagInclude = ({incs, context}: HasIncMap & LoaderState): Schema.CustomTag => ({
+const tagInclude = ({incs, context, tag}: HasIncMap & HasTagStr & LoaderState): Schema.CustomTag => ({
     identify: () => false,
-    tag: '!include',
+    tag,
     resolve: (_doc, cst) => {
         const ypath = includeYpath(cst);
         const {strValue} = cst as MaybeNullableStrValue;
@@ -120,18 +140,35 @@ const tagInclude = ({incs, context}: HasIncMap & LoaderState): Schema.CustomTag 
     }
 });
 
-const multiYamlParse = (cache: LoaderState, content: string) => {
-    const incs: IncMap    = {};
-    const tagInc  = tagInclude({ ...cache, incs });
-    const options: YAML.Options = { ...defaultOptions,  customTags: [ tagInc ]};
-    const doc     = YAML.parse( content, options );
-    const res     = { doc, incs } ;
+const multiYamlParse = (cache: LoaderState, content: string, options: LoaderOptions) => {
+    const incs: IncMap = {};
+    const {customTags: MaybeCustomTags} = options;
+    const includeTags = ["!include", "!yaml", "!md", "!json"].map(
+        tag => tagInclude({ ...cache, incs, tag })
+    );
+    const customTags = [
+        ...includeTags,
+        ...(MaybeCustomTags || [])
+    ];
+    const YAMLoptions: YAML.Options = { ...defaultOptions, customTags };
+    const doc = YAML.parse( content, YAMLoptions );
+    const res = { doc, incs };
     return res;
 };
 
-const syncParseYaml = (state: LoaderState): DocumentObject => {
-    const content = fs.readFileSync( state.resourcePath,{encoding:'utf8'});
-    const result  = multiYamlParse( state, content );
+const syncParseYaml = (state: LoaderState, options: LoaderOptions): DocumentObject => {
+    const ext     = path.extname(state.resourcePath).toLowerCase();
+    const content = fs.readFileSync( state.resourcePath, {encoding:'utf8'});
+    const isYaml  = ext === '.yaml' || ext === '.yml' || ext === '.raml';
+    const isMD    = ext === '.md';
+    const isJSON  = ext === '.json';
+    const NoIncs: IncMap = {};
+
+    const result  = isYaml ? multiYamlParse( state, content, options ) :
+                    isMD   ? {doc: marked(content),     incs: NoIncs} :
+                    isJSON ? {doc: JSON.parse(content), incs: NoIncs} :
+                    {doc: 'no doc', incs: NoIncs}
+    ;
     return {...result, state};
 }
 
@@ -159,7 +196,7 @@ const getModulePromise = (state: LoaderState, options: LoaderOptions): Promise<s
                 const {resourcePath} = cache;
                 if (!(resourcePath in results)) {
                     try {
-                        const result = syncParseYaml(cache);
+                        const result = syncParseYaml(cache, options);
                         results[resourcePath] = result;
                         Object
                             .keys( result.incs )
@@ -177,7 +214,7 @@ const getModulePromise = (state: LoaderState, options: LoaderOptions): Promise<s
                         ;
                     } catch (err) {
                         reject(
-                            new IncludeError(err, cache.from || cache.resourcePath)
+                            new IncludeError(`${err}`, cache.from || cache.resourcePath)
                         );
                     }
                 }
@@ -235,7 +272,7 @@ const getId = (files: string[], {keepFiles, keepFilesRoots, rootContext}: Loader
             keepFilesRoots
                 ? fileName
                 : path.normalize(
-                    fileName.replace(rootContext, '.')
+                    fileName.replace(rootContext || '', '.')
                 )
         )
         : `${files.indexOf(fileName)}`

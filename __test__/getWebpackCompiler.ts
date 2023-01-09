@@ -18,7 +18,7 @@ const getWebpackCompiler = (entry: string, loaderOptions = {}, config: Partial<C
     module: {
       rules: [
         {
-          test: /\.yaml$/i,
+          test: /\.ya?ml$/i,
           rules: [
             {
               loader: 'multi-yaml-loader',

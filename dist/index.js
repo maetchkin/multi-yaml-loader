@@ -18,11 +18,19 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IncludeError = void 0;
+// @ts-ignore
 const loader_utils_1 = require("loader-utils");
+// @ts-ignore
 const path = __importStar(require("path"));
+// @ts-ignore
 const fs = __importStar(require("fs"));
+// @ts-ignore
+const marked_1 = __importDefault(require("marked"));
 const YAML = __importStar(require("yaml"));
 const util_1 = require("yaml/util");
 const getNStr = (node, next) => {
@@ -74,9 +82,9 @@ const defaultOptions = {
     prettyErrors: true,
     keepCstNodes: true,
 };
-const tagInclude = ({ incs, context }) => ({
+const tagInclude = ({ incs, context, tag }) => ({
     identify: () => false,
-    tag: '!include',
+    tag,
     resolve: (_doc, cst) => {
         const ypath = includeYpath(cst);
         const { strValue } = cst;
@@ -88,17 +96,30 @@ const tagInclude = ({ incs, context }) => ({
         return null;
     }
 });
-const multiYamlParse = (cache, content) => {
+const multiYamlParse = (cache, content, options) => {
     const incs = {};
-    const tagInc = tagInclude(Object.assign(Object.assign({}, cache), { incs }));
-    const options = Object.assign(Object.assign({}, defaultOptions), { customTags: [tagInc] });
-    const doc = YAML.parse(content, options);
+    const { customTags: MaybeCustomTags } = options;
+    const includeTags = ["!include", "!yaml", "!md", "!json"].map(tag => tagInclude(Object.assign(Object.assign({}, cache), { incs, tag })));
+    const customTags = [
+        ...includeTags,
+        ...(MaybeCustomTags || [])
+    ];
+    const YAMLoptions = Object.assign(Object.assign({}, defaultOptions), { customTags });
+    const doc = YAML.parse(content, YAMLoptions);
     const res = { doc, incs };
     return res;
 };
-const syncParseYaml = (state) => {
+const syncParseYaml = (state, options) => {
+    const ext = path.extname(state.resourcePath).toLowerCase();
     const content = fs.readFileSync(state.resourcePath, { encoding: 'utf8' });
-    const result = multiYamlParse(state, content);
+    const isYaml = ext === '.yaml' || ext === '.yml' || ext === '.raml';
+    const isMD = ext === '.md';
+    const isJSON = ext === '.json';
+    const NoIncs = {};
+    const result = isYaml ? multiYamlParse(state, content, options) :
+        isMD ? { doc: marked_1.default(content), incs: NoIncs } :
+            isJSON ? { doc: JSON.parse(content), incs: NoIncs } :
+                { doc: 'no doc', incs: NoIncs };
     return Object.assign(Object.assign({}, result), { state });
 };
 const getFullResultStr = (unpack, packed) => `
@@ -121,7 +142,7 @@ const getModulePromise = (state, options) => new Promise((resolve, reject) => {
         const { resourcePath } = cache;
         if (!(resourcePath in results)) {
             try {
-                const result = syncParseYaml(cache);
+                const result = syncParseYaml(cache, options);
                 results[resourcePath] = result;
                 Object
                     .keys(result.incs)
@@ -131,7 +152,7 @@ const getModulePromise = (state, options) => new Promise((resolve, reject) => {
                 });
             }
             catch (err) {
-                reject(new IncludeError(err, cache.from || cache.resourcePath));
+                reject(new IncludeError(`${err}`, cache.from || cache.resourcePath));
             }
         }
     }
@@ -156,7 +177,7 @@ const packReducer = (idByFile) => (packed, [fileName, { doc, incs = {} }]) => {
 const getId = (files, { keepFiles, keepFilesRoots, rootContext }) => (fileName) => keepFiles
     ? (keepFilesRoots
         ? fileName
-        : path.normalize(fileName.replace(rootContext, '.')))
+        : path.normalize(fileName.replace(rootContext || '', '.')))
     : `${files.indexOf(fileName)}`;
 function pack(data, root, options) {
     const files = Object.keys(data).sort(f1 => f1 === root ? -1 : 1);

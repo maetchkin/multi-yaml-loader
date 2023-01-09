@@ -4,7 +4,7 @@ exports[`webpack: documents-simple 1`] = `
 Object {
   "main.bundle.js": CachedSource {
     "_cachedMaps": Object {},
-    "_cachedSize": 5893,
+    "_cachedSize": undefined,
     "_cachedSource": "/******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};

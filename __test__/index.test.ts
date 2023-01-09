@@ -2,10 +2,12 @@ import * as webpack                         from 'webpack';
 import * as fs                              from 'fs';
 import * as tmp                             from 'tmp';
 import Loader, {IncludeError}               from 'multi-yaml-loader';
+import {Schema}                             from "yaml/types";
 import {MockLoaderContext}                  from './mock-loader';
 import type {LoaderOptionsQuery}            from './mock-loader';
 
 import LoaderContext = webpack.loader.LoaderContext;
+
 
 export const createLoading = (file: string, options?: LoaderOptionsQuery) =>
     new Promise<string>(
@@ -19,7 +21,6 @@ export const createLoading = (file: string, options?: LoaderOptionsQuery) =>
                 const tmpobj = tmp.fileSync();
                 fs.writeSync(tmpobj.fd, moduleYamlString);
                 const content: any = require(tmpobj.name);
-                //expect('').toEqual( true );
                 return content;
             }
         )
@@ -107,6 +108,74 @@ test(
                     expect(a.value).toEqual(false);
                     expect(c.name).toEqual("merge");
                     expect(c.a.name).toEqual("simple");
+                }
+            )
+);
+
+
+test(
+    '!yaml',
+    () => createLoading("./documents/has-yaml-include.yaml")
+            .then(
+                data => {
+                    const {name, content} = data.result;
+                    expect(name).toEqual("has-yaml-include");
+                    expect(content.name).toEqual("simple");
+                }
+            )
+);
+
+test(
+    '!md',
+    () => createLoading("./documents/has-md-include.yaml")
+            .then(
+                data => {
+                    const {name, content} = data.result;
+                    expect(name).toEqual("has-md-include");
+                    expect(content).toMatchSnapshot("md-include-content");
+                }
+            )
+);
+
+test(
+    '!json',
+    () => createLoading("./documents/has-json-include.yaml")
+            .then(
+                data => {
+                    const {name, content} = data.result;
+                    expect(name).toEqual("has-json-include");
+                    expect(content.name).toEqual("simple");
+                }
+            )
+);
+
+test(
+    'custom-tags',
+    () => createLoading(
+        "./documents/has-custom-tags.yaml",
+        {
+            options: {
+                customTags: [
+                    ({
+                        tag: '!custom',
+                        identify:  () => true,
+                        resolve: (doc, cst) => {
+                            const value = 'strValue' in cst
+                                ? (cst as {strValue: any} ).strValue
+                                : ''
+                            ;
+                            return `custom[${value}]`;
+                        }
+                    }) as Schema.CustomTag
+                ]
+            }
+        }
+    )
+            .then(
+                data => {
+                    const {name, content} = data.result;
+                    expect(name).toEqual("has-custom-tags");
+                    expect(content).toEqual("custom[custom content]");
                 }
             )
 );
