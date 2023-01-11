@@ -98,6 +98,16 @@ test(
 );
 
 test(
+    'absolute',
+    () => createLoading("./documents/link-to-abs-include.yaml")
+            .then(
+                data => {
+                    expect(data.result.content.content.name).toEqual("simple");
+                }
+            )
+);
+
+test(
     'merge',
     () => createLoading("./documents/merge.yaml")
             .then(

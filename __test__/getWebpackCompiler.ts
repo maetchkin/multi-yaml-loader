@@ -1,6 +1,5 @@
 import * as path                        from "path";
 import * as webpack                     from "webpack";
-/*import { createFsFromVolume, Volume }   from "memfs";*/
 import type { Configuration }           from "webpack";
 
 

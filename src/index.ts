@@ -20,6 +20,7 @@ export type MaybeKeepFilesRoots  = {keepFilesRoots?: boolean};
 export type MaybeHasSpace        = {space?:          boolean};
 export type MaybeHasFrom         = {from?:           string};
 export type HasRootContext       = {rootContext:     string};
+export type HasDocRoot           = {docRoot:        string};
 export type MaybeHasRootContext  = Partial<HasRootContext>;
 export type LoaderOptions        = MaybeKeepFiles &
                                    MaybeKeepFilesRoots &
@@ -32,7 +33,8 @@ export type MaybeHasCustomTags   = {customTags?: Schema.CustomTag[]};
 
 export type LoaderState =
     Pick<loader.LoaderContext, "resourcePath" | "rootContext" | "context" | "resourceQuery"> &
-    MaybeHasFrom
+    MaybeHasFrom &
+    HasDocRoot
 ;
 
 export type IncDeep    = string | number;
@@ -125,14 +127,20 @@ const defaultOptions = {
 
 
 
-const tagInclude = ({incs, context, tag}: HasIncMap & HasTagStr & LoaderState): Schema.CustomTag => ({
+const tagInclude = ({incs, context, tag, docRoot}: HasIncMap & HasTagStr & LoaderState): Schema.CustomTag => ({
     identify: () => false,
     tag,
     resolve: (_doc, cst) => {
         const ypath = includeYpath(cst);
         const {strValue} = cst as MaybeNullableStrValue;
-        if (strValue !== null && strValue !== void(0) ) {
-            const file = path.join(context, strValue as string);
+        if (typeof strValue === 'string' ) {
+            const file = path.join(
+                strValue.startsWith('/')
+                    ? docRoot
+                    : context
+                ,
+                strValue
+            );
             incs[file] = incs[file] || [];
             incs[file].push( ypath );
         }
@@ -357,7 +365,7 @@ function unpack (packed: PackedResult): any {
 const MYLoader = function (this: loader.LoaderContext) {
     const callback = this.async();
     const { resourcePath, rootContext, context, resourceQuery } = this;
-    const state: LoaderState = { resourcePath, rootContext, context, resourceQuery };
+    const state: LoaderState = { resourcePath, rootContext, context, resourceQuery, docRoot: context };
     if (this.addContextDependency) {
         this.addContextDependency(context);
     }

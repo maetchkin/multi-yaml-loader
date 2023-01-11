@@ -15,12 +15,15 @@ export declare type MaybeHasFrom = {
 export declare type HasRootContext = {
     rootContext: string;
 };
+export declare type HasDocRoot = {
+    docRoot: string;
+};
 export declare type MaybeHasRootContext = Partial<HasRootContext>;
 export declare type LoaderOptions = MaybeKeepFiles & MaybeKeepFilesRoots & MaybeHasSpace & MaybeHasRootContext & MaybeHasCustomTags;
 export declare type MaybeHasCustomTags = {
     customTags?: Schema.CustomTag[];
 };
-export declare type LoaderState = Pick<loader.LoaderContext, "resourcePath" | "rootContext" | "context" | "resourceQuery"> & MaybeHasFrom;
+export declare type LoaderState = Pick<loader.LoaderContext, "resourcePath" | "rootContext" | "context" | "resourceQuery"> & MaybeHasFrom & HasDocRoot;
 export declare type IncDeep = string | number;
 export declare type IncList = IncDeep[][];
 export declare type IncMap = Record<string, IncList>;

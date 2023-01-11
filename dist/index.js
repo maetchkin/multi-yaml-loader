@@ -82,14 +82,16 @@ const defaultOptions = {
     prettyErrors: true,
     keepCstNodes: true,
 };
-const tagInclude = ({ incs, context, tag }) => ({
+const tagInclude = ({ incs, context, tag, docRoot }) => ({
     identify: () => false,
     tag,
     resolve: (_doc, cst) => {
         const ypath = includeYpath(cst);
         const { strValue } = cst;
-        if (strValue !== null && strValue !== void (0)) {
-            const file = path.join(context, strValue);
+        if (typeof strValue === 'string') {
+            const file = path.join(strValue.startsWith('/')
+                ? docRoot
+                : context, strValue);
             incs[file] = incs[file] || [];
             incs[file].push(ypath);
         }
@@ -243,7 +245,7 @@ function unpack(packed) {
 const MYLoader = function () {
     const callback = this.async();
     const { resourcePath, rootContext, context, resourceQuery } = this;
-    const state = { resourcePath, rootContext, context, resourceQuery };
+    const state = { resourcePath, rootContext, context, resourceQuery, docRoot: context };
     if (this.addContextDependency) {
         this.addContextDependency(context);
     }
