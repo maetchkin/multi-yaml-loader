@@ -6,14 +6,15 @@ import {getOptions, parseQuery} from 'loader-utils';
 import * as path                from 'path';
 // @ts-ignore
 import * as fs                  from 'fs';
-// @ts-ignore
-import marked                   from 'marked';
 
+import {marked}                 from 'marked';
 
 import * as YAML                from 'yaml';
 import { Type }                 from 'yaml/util';
 import type { Schema }          from 'yaml/types';
 import type { CST }             from 'yaml/parse-cst';
+
+
 
 export type MaybeKeepFiles       = {keepFiles?:      boolean};
 export type MaybeKeepFilesRoots  = {keepFilesRoots?: boolean};
@@ -26,10 +27,15 @@ export type LoaderOptions        = MaybeKeepFiles &
                                    MaybeKeepFilesRoots &
                                    MaybeHasSpace &
                                    MaybeHasRootContext &
-                                   MaybeHasCustomTags
+                                   MaybeHasCustomTags &
+                                   MaybeHasMdImageLoader &
+                                   MaybeHasMarked
 ;
 
-export type MaybeHasCustomTags   = {customTags?: Schema.CustomTag[]};
+export type MdImageLoaderFunc      = (state: LoaderState, href: string, baseUrl: string) => string;
+export type MaybeHasMdImageLoader  = {mdImageLoader?: MdImageLoaderFunc};
+export type MaybeHasMarked         = {marked?: marked.MarkedOptions};
+export type MaybeHasCustomTags     = {customTags?: Schema.CustomTag[]};
 
 export type LoaderState =
     Pick<loader.LoaderContext, "resourcePath" | "rootContext" | "context" | "resourceQuery"> &
@@ -129,8 +135,6 @@ const defaultOptions = {
     keepCstNodes: true,
 };
 
-
-
 const tagInclude = ({incs, context, tag, docRoot}: HasIncMap & HasTagStr & LoaderState): Schema.CustomTag => ({
     identify: () => false,
     tag,
@@ -168,16 +172,43 @@ const multiYamlParse = (cache: LoaderState, content: string, options: LoaderOpti
     return res;
 };
 
+const NoIncs: IncMap = {};
+
+const rendererImage = (state: LoaderState, mdImageLoader?: MdImageLoaderFunc) => function (this: marked.Renderer | marked.RendererThis, href: string | null, title: string | null, text: string) {
+    const {options = {}} = this as {options: marked.MarkedOptions};
+    const {baseUrl} = options;
+    const imghref = (baseUrl && href && !href.startsWith('/'))
+            ? mdImageLoader
+                ? mdImageLoader(state, href, baseUrl)
+                : path.join(baseUrl, href)
+            : href
+    ;
+    return imghref === null
+            ? text
+            : `<img src="${imghref}" alt="${text}" ${ title ? ` title="${title}"` : '' } class="zoom">`
+    ;
+}
+
+const getMarkdown = (content: string, {marked: maybeMarkedOptions = {}, mdImageLoader}: LoaderOptions, state: LoaderState) => {
+    const {renderer: maybeRenderer, ...markedOptions} = maybeMarkedOptions;
+    const renderer = maybeRenderer || new marked.Renderer( markedOptions );
+    renderer.image = rendererImage( state, mdImageLoader );
+    const options: marked.MarkedOptions = { ...markedOptions, renderer };
+    marked.setOptions(options);
+    const doc = marked(content);
+    return {doc, incs: NoIncs};
+}
+
 const syncParseYaml = (state: LoaderState, options: LoaderOptions): DocumentObject => {
     const ext     = path.extname(state.resourcePath).toLowerCase();
     const content = fs.readFileSync( state.resourcePath, {encoding:'utf8'});
     const isYaml  = ext === '.yaml' || ext === '.yml' || ext === '.raml';
     const isMD    = ext === '.md';
     const isJSON  = ext === '.json';
-    const NoIncs: IncMap = {};
+
 
     const result  = isYaml ? multiYamlParse( state, content, options ) :
-                    isMD   ? {doc: marked(content),     incs: NoIncs} :
+                    isMD   ? getMarkdown(content, options, state) :
                     isJSON ? {doc: JSON.parse(content), incs: NoIncs} :
                     {doc: 'no doc', incs: NoIncs}
     ;

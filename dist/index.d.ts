@@ -1,4 +1,5 @@
 import { loader } from 'webpack';
+import { marked } from 'marked';
 import type { Schema } from 'yaml/types';
 export declare type MaybeKeepFiles = {
     keepFiles?: boolean;
@@ -19,7 +20,14 @@ export declare type HasDocRoot = {
     docRoot: string;
 };
 export declare type MaybeHasRootContext = Partial<HasRootContext>;
-export declare type LoaderOptions = MaybeKeepFiles & MaybeKeepFilesRoots & MaybeHasSpace & MaybeHasRootContext & MaybeHasCustomTags;
+export declare type LoaderOptions = MaybeKeepFiles & MaybeKeepFilesRoots & MaybeHasSpace & MaybeHasRootContext & MaybeHasCustomTags & MaybeHasMdImageLoader & MaybeHasMarked;
+export declare type MdImageLoaderFunc = (state: LoaderState, href: string, baseUrl: string) => string;
+export declare type MaybeHasMdImageLoader = {
+    mdImageLoader?: MdImageLoaderFunc;
+};
+export declare type MaybeHasMarked = {
+    marked?: marked.MarkedOptions;
+};
 export declare type MaybeHasCustomTags = {
     customTags?: Schema.CustomTag[];
 };

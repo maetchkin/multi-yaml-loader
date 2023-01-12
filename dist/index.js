@@ -18,8 +18,16 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IncludeError = void 0;
@@ -29,8 +37,7 @@ const loader_utils_1 = require("loader-utils");
 const path = __importStar(require("path"));
 // @ts-ignore
 const fs = __importStar(require("fs"));
-// @ts-ignore
-const marked_1 = __importDefault(require("marked"));
+const marked_1 = require("marked");
 const YAML = __importStar(require("yaml"));
 const util_1 = require("yaml/util");
 const filterCSTComment = ({ type }) => type !== util_1.Type.COMMENT && type !== util_1.Type.BLANK_LINE;
@@ -115,15 +122,36 @@ const multiYamlParse = (cache, content, options) => {
     const res = { doc, incs };
     return res;
 };
+const NoIncs = {};
+const rendererImage = (state, mdImageLoader) => function (href, title, text) {
+    const { options = {} } = this;
+    const { baseUrl } = options;
+    const imghref = (baseUrl && href && !href.startsWith('/'))
+        ? mdImageLoader
+            ? mdImageLoader(state, href, baseUrl)
+            : path.join(baseUrl, href)
+        : href;
+    return imghref === null
+        ? text
+        : `<img src="${imghref}" alt="${text}" ${title ? ` title="${title}"` : ''} class="zoom">`;
+};
+const getMarkdown = (content, { marked: maybeMarkedOptions = {}, mdImageLoader }, state) => {
+    const { renderer: maybeRenderer } = maybeMarkedOptions, markedOptions = __rest(maybeMarkedOptions, ["renderer"]);
+    const renderer = maybeRenderer || new marked_1.marked.Renderer(markedOptions);
+    renderer.image = rendererImage(state, mdImageLoader);
+    const options = Object.assign(Object.assign({}, markedOptions), { renderer });
+    marked_1.marked.setOptions(options);
+    const doc = marked_1.marked(content);
+    return { doc, incs: NoIncs };
+};
 const syncParseYaml = (state, options) => {
     const ext = path.extname(state.resourcePath).toLowerCase();
     const content = fs.readFileSync(state.resourcePath, { encoding: 'utf8' });
     const isYaml = ext === '.yaml' || ext === '.yml' || ext === '.raml';
     const isMD = ext === '.md';
     const isJSON = ext === '.json';
-    const NoIncs = {};
     const result = isYaml ? multiYamlParse(state, content, options) :
-        isMD ? { doc: marked_1.default(content), incs: NoIncs } :
+        isMD ? getMarkdown(content, options, state) :
             isJSON ? { doc: JSON.parse(content), incs: NoIncs } :
                 { doc: 'no doc', incs: NoIncs };
     return Object.assign(Object.assign({}, result), { state });

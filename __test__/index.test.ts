@@ -1,7 +1,9 @@
+import * as path                            from 'path';
 import * as fs                              from 'fs';
 import * as tmp                             from 'tmp';
 import Loader, {IncludeError}               from 'multi-yaml-loader';
 import {Schema}                             from "yaml/types";
+import {LoaderState}                        from "../src";
 import {MockLoaderContext}                  from './mock-loader';
 import type {LoaderOptionsQuery}            from './mock-loader';
 
@@ -162,6 +164,43 @@ test(
                     expect(content).toMatchSnapshot("md-include-content");
                 }
             )
+);
+
+test(
+    '!md marked BaseURL',
+    () => createLoading("./documents/has-md-include.yaml", { options:{ marked: { baseUrl: '/dist/path/img/' } }})
+            .then(
+                data => {
+                    const {name, content} = data.result;
+                    expect(name).toEqual("has-md-include");
+                    expect(content).toMatchSnapshot("md-baseurl-include-content");
+                }
+            )
+);
+
+test(
+    '!md mdImageLoader',
+    () => {
+        const mdImageLoaderLog = [];
+        const mdImageLoader = (state: LoaderState, href: string, baseUrl: string ): string => {
+            mdImageLoaderLog.push({state, href})
+            return path.join(baseUrl, href);
+        }
+        return createLoading("./documents/has-md-include.yaml", {
+            options: {
+                mdImageLoader,
+                marked: {baseUrl: '/dist/path/img/'}
+            }
+        })
+            .then(
+                data => {
+                    const {name, content} = data.result;
+                    expect(name).toEqual("has-md-include");
+                    expect(content).toMatchSnapshot("md-mdImageLoader-content");
+                    expect(mdImageLoaderLog).toMatchSnapshot("md-mdImageLoader-mdImageLoaderLog");
+                }
+            )
+    }
 );
 
 test(
