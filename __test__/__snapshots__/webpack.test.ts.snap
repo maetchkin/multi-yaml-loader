@@ -102,7 +102,7 @@ Object {
 
 
     function unpack(packed) {
-    const [docMap, root] = packed;
+    const [docMap, root] = JSON.parse(JSON.stringify(packed));
     const incsReducer = (visit) => (doc, [docptr, incs]) => {
         const incdoc = resolveIncs(docptr, visit);
         incs.forEach((inc) => {
@@ -147,6 +147,9 @@ Object {
                         return n;
                     }
                 }, node);
+            }
+            else if (Array.isArray(node)) {
+                res = node.map(item => resolveMerge(item, visit));
             }
             else {
                 res = node;
@@ -294,7 +297,7 @@ Object {
           "_cachedSize": undefined,
           "_cachedSource": "
     function unpack(packed) {
-    const [docMap, root] = packed;
+    const [docMap, root] = JSON.parse(JSON.stringify(packed));
     const incsReducer = (visit) => (doc, [docptr, incs]) => {
         const incdoc = resolveIncs(docptr, visit);
         incs.forEach((inc) => {
@@ -339,6 +342,9 @@ Object {
                         return n;
                     }
                 }, node);
+            }
+            else if (Array.isArray(node)) {
+                res = node.map(item => resolveMerge(item, visit));
             }
             else {
                 res = node;
@@ -368,7 +374,7 @@ Object {
               "_name": "/Users/bogdan/sirius/multi-yaml-loader/dist/index.js??ref--4-rules-0!/Users/bogdan/sirius/multi-yaml-loader/__test__/documents/simple.yaml",
               "_value": "
     function unpack(packed) {
-    const [docMap, root] = packed;
+    const [docMap, root] = JSON.parse(JSON.stringify(packed));
     const incsReducer = (visit) => (doc, [docptr, incs]) => {
         const incdoc = resolveIncs(docptr, visit);
         incs.forEach((inc) => {
@@ -413,6 +419,9 @@ Object {
                         return n;
                     }
                 }, node);
+            }
+            else if (Array.isArray(node)) {
+                res = node.map(item => resolveMerge(item, visit));
             }
             else {
                 res = node;

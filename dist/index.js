@@ -33,6 +33,7 @@ const fs = __importStar(require("fs"));
 const marked_1 = __importDefault(require("marked"));
 const YAML = __importStar(require("yaml"));
 const util_1 = require("yaml/util");
+const filterCSTComment = ({ type }) => type !== util_1.Type.COMMENT && type !== util_1.Type.BLANK_LINE;
 const getNStr = (node, next) => {
     const { type } = node;
     let res = null;
@@ -40,16 +41,18 @@ const getNStr = (node, next) => {
         case util_1.Type.SEQ:
             {
                 const { items } = node;
+                const filtered = items.filter(filterCSTComment);
                 if (items) {
-                    res = items.indexOf(next);
+                    res = filtered.indexOf(next);
                 }
             }
             break;
         case util_1.Type.MAP:
             const { items } = node;
-            if (items) {
-                let pos = items.indexOf(next);
-                res = items[pos - 1].toString();
+            const filtered = items.filter(filterCSTComment);
+            if (filtered) {
+                let pos = filtered.indexOf(next);
+                res = filtered[pos - 1].toString();
             }
             break;
     }
@@ -69,6 +72,7 @@ const includeYpath = (cst) => {
         parent && (cstPath = [parent, ...cstPath]);
     } while (parent);
     let ypath = cstPath.reduce(traverseCST, []);
+    // console.log('ypath', {cstPath, ypath});
     return ypath;
 };
 class IncludeError extends Error {
@@ -107,7 +111,7 @@ const multiYamlParse = (cache, content, options) => {
         ...(MaybeCustomTags || [])
     ];
     const YAMLoptions = Object.assign(Object.assign({}, defaultOptions), { customTags });
-    const doc = YAML.parse(content, YAMLoptions);
+    const doc = YAML.parseDocument(content, YAMLoptions);
     const res = { doc, incs };
     return res;
 };
@@ -162,6 +166,7 @@ const getModulePromise = (state, options) => new Promise((resolve, reject) => {
 })
     .then((results) => {
     const { space } = options;
+    // console.log( "results > ", JSON.stringify(results, null, 2) )
     const result = JSON.stringify(pack(results, state.resourcePath, options), null, space ? 2 : 0);
     return result;
 })
@@ -188,7 +193,7 @@ function pack(data, root, options) {
     return [packed, idByFile(root)];
 }
 function unpack(packed) {
-    const [docMap, root] = packed;
+    const [docMap, root] = JSON.parse(JSON.stringify(packed));
     const incsReducer = (visit) => (doc, [docptr, incs]) => {
         const incdoc = resolveIncs(docptr, visit);
         incs.forEach((inc) => {
@@ -233,6 +238,9 @@ function unpack(packed) {
                         return n;
                     }
                 }, node);
+            }
+            else if (Array.isArray(node)) {
+                res = node.map(item => resolveMerge(item, visit));
             }
             else {
                 res = node;

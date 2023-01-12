@@ -95,7 +95,7 @@
 
 
     function unpack(packed) {
-    const [docMap, root] = packed;
+    const [docMap, root] = JSON.parse(JSON.stringify(packed));
     const incsReducer = (visit) => (doc, [docptr, incs]) => {
         const incdoc = resolveIncs(docptr, visit);
         incs.forEach((inc) => {
@@ -140,6 +140,9 @@
                         return n;
                     }
                 }, node);
+            }
+            else if (Array.isArray(node)) {
+                res = node.map(item => resolveMerge(item, visit));
             }
             else {
                 res = node;

@@ -12,3 +12,11 @@ b:
 c:
   name: third
   <<<: !include 'merge.yaml'
+d:
+  - d1:
+      name: fourth
+      <<<1: !include 'simple.yaml'
+      <<<2:
+        value: true
+      <<<3:
+        value: false

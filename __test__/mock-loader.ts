@@ -12,6 +12,7 @@ export class MockLoaderContext implements LoaderState {
     public resourcePath:  string;
     public rootContext:   string;
     public context:       string;
+    public docRoot:       string;
     public query:         any;
     public async: () => (err: Error | null | undefined, res: string | undefined) => void;
 
@@ -26,6 +27,7 @@ export class MockLoaderContext implements LoaderState {
         this.resourcePath  = path.resolve(__dirname, file);
         this.rootContext   = path.resolve(process.env.INIT_CWD || __dirname);
         this.context       = path.dirname(this.resourcePath);
+        this.docRoot       = path.dirname(this.resourcePath);
         this.async = () => (err, res) => {
             err
                 ? reject(err)

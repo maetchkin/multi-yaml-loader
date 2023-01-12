@@ -1,4 +1,3 @@
-import * as webpack                         from 'webpack';
 import * as fs                              from 'fs';
 import * as tmp                             from 'tmp';
 import Loader, {IncludeError}               from 'multi-yaml-loader';
@@ -6,14 +5,11 @@ import {Schema}                             from "yaml/types";
 import {MockLoaderContext}                  from './mock-loader';
 import type {LoaderOptionsQuery}            from './mock-loader';
 
-import LoaderContext = webpack.loader.LoaderContext;
-
-
 export const createLoading = (file: string, options?: LoaderOptionsQuery) =>
     new Promise<string>(
         (resolve, reject) => {
             const ctx = new MockLoaderContext(file, resolve, reject, options || {});
-            Loader.call(ctx as LoaderContext);
+            Loader.call(ctx);
         }
     )
         .then(
@@ -45,6 +41,25 @@ test(
                 'result',
                 { name: 'example', content: { name: 'simple' } }
             )
+        )
+);
+
+test(
+    'commented include',
+    () => createLoading("documents/commented-include.yaml")
+        .then(
+            data => {
+                const content = data.result;
+                expect(content).toEqual(
+                    {
+                        name: "commented",
+                        content: [
+                            {name: 'simple'},
+                            {name: 'simple'}
+                        ]
+                    }
+                );
+            }
         )
 );
 
@@ -112,12 +127,14 @@ test(
     () => createLoading("./documents/merge.yaml")
             .then(
                 data => {
-                    const {name, a, b, c} = data.result;
+                    const {name, a, c, d} = data.result;
                     expect(name).toEqual("merge");
                     expect(a.name).toEqual("simple");
                     expect(a.value).toEqual(false);
                     expect(c.name).toEqual("merge");
                     expect(c.a.name).toEqual("simple");
+                    expect(d[0].d1.name).toEqual("simple");
+                    expect(d[0].d1.value).toEqual(false);
                 }
             )
 );

@@ -56,14 +56,17 @@ export type HasTagStr = {
     tag: string
 }
 
+const filterCSTComment = ({type}: YAML.CST.Node) => type !== Type.COMMENT && type !== Type.BLANK_LINE;
+
 const getNStr = (node: YAML.CST.Node, next: YAML.CST.Node): IncDeep | null => {
     const {type} = node;
     let res = null;
     switch (type) {
         case Type.SEQ: {
             const {items} = node as CST.Seq;
+            const filtered = items.filter(filterCSTComment)
             if (items) {
-                res = items.indexOf(
+                res = filtered.indexOf(
                     next as CST.BlankLine |
                             CST.Comment   |
                             CST.SeqItem
@@ -73,15 +76,16 @@ const getNStr = (node: YAML.CST.Node, next: YAML.CST.Node): IncDeep | null => {
         break;
         case Type.MAP:
             const {items} = node as CST.Map;
-            if(items){
-                let pos = items.indexOf(
+            const filtered = items.filter(filterCSTComment);
+            if(filtered){
+                let pos = filtered.indexOf(
                     next as CST.BlankLine |
                             CST.Comment   |
                             CST.Alias     |
                             CST.Scalar    |
                             CST.MapItem
                 );
-                res = items[pos-1].toString();
+                res = filtered[pos - 1].toString();
             }
         break;
     }
@@ -109,7 +113,7 @@ const includeYpath = (cst: YAML.CST.Node) => {
     } while (parent);
 
     let ypath = cstPath.reduce( traverseCST, [] );
-
+    // console.log('ypath', {cstPath, ypath});
     return ypath;
 }
 
@@ -159,7 +163,7 @@ const multiYamlParse = (cache: LoaderState, content: string, options: LoaderOpti
         ...(MaybeCustomTags || [])
     ];
     const YAMLoptions: YAML.Options = { ...defaultOptions, customTags };
-    const doc = YAML.parse( content, YAMLoptions );
+    const doc = YAML.parseDocument( content, YAMLoptions );
     const res = { doc, incs };
     return res;
 };
@@ -234,6 +238,7 @@ const getModulePromise = (state: LoaderState, options: LoaderOptions): Promise<s
     .then(
         (results: DocumentsMap): string => {
             const {space} = options;
+            // console.log( "results > ", JSON.stringify(results, null, 2) )
             const result = JSON.stringify(
                 pack(results, state.resourcePath, options),
                 null,
@@ -296,7 +301,7 @@ function pack (data: DocumentsMap, root: string, options: LoaderOptions ): Packe
 }
 
 function unpack (packed: PackedResult): any {
-    const [ docMap, root ] = packed;
+    const [ docMap, root ] = JSON.parse(JSON.stringify(packed)) as PackedResult;
     const incsReducer = (visit: Record<string, boolean>) => (doc: any, [docptr, incs]: [string, IncList] ): any => {
         const incdoc = resolveIncs(docptr, visit);
         incs.forEach(
@@ -351,6 +356,10 @@ function unpack (packed: PackedResult): any {
                         }
                     }, node
                 );
+            } else if(Array.isArray(node)) {
+                res = node.map(
+                    item => resolveMerge(item, visit)
+                )
             } else {
                 res = node;
             }
