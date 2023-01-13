@@ -81,9 +81,9 @@ exports[`!md: md-include-content 1`] = `
 <li>item</li>
 </ul>
 <p>###img
-<img src=\\"./img.png\\" alt=\\"img\\"  title=\\"title img\\" class=\\"zoom\\">
+<img src=\\"/img.png\\" alt=\\"img\\"  title=\\"title img\\" class=\\"zoom\\">
 ###deep img
-<img src=\\"./path/to/img/img.png\\" alt=\\"img\\"  title=\\"title deep img\\" class=\\"zoom\\"></p>
+<img src=\\"/path/to/img/img.png\\" alt=\\"img\\"  title=\\"title deep img\\" class=\\"zoom\\"></p>
 <pre><code class=\\"language-javascript\\">const a = &#39;string&#39;;
 function b (arg) {
     console.log(&#39;b&#39;, arg)

@@ -126,10 +126,10 @@ const NoIncs = {};
 const rendererImage = (state, mdImageLoader) => function (href, title, text) {
     const { options = {} } = this;
     const { baseUrl } = options;
-    const imghref = (baseUrl && href && !href.startsWith('/'))
+    const imghref = href
         ? mdImageLoader
-            ? mdImageLoader(state, href, baseUrl)
-            : path.join(baseUrl, href)
+            ? mdImageLoader(state, href, baseUrl || '/')
+            : path.join(baseUrl || '/', href)
         : href;
     return imghref === null
         ? text

@@ -177,10 +177,10 @@ const NoIncs: IncMap = {};
 const rendererImage = (state: LoaderState, mdImageLoader?: MdImageLoaderFunc) => function (this: marked.Renderer | marked.RendererThis, href: string | null, title: string | null, text: string) {
     const {options = {}} = this as {options: marked.MarkedOptions};
     const {baseUrl} = options;
-    const imghref = (baseUrl && href && !href.startsWith('/'))
+    const imghref = href
             ? mdImageLoader
-                ? mdImageLoader(state, href, baseUrl)
-                : path.join(baseUrl, href)
+                ? mdImageLoader(state, href, baseUrl || '/')
+                : path.join(baseUrl || '/', href)
             : href
     ;
     return imghref === null
