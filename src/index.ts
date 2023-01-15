@@ -33,9 +33,10 @@ export type LoaderOptions        = MaybeKeepFiles &
 ;
 
 export type MdImageLoaderFunc      = (state: LoaderState, href: string, baseUrl: string) => string;
+export type CustomTagFunc          = (state: LoaderState) => Schema.CustomTag
 export type MaybeHasMdImageLoader  = {mdImageLoader?: MdImageLoaderFunc};
 export type MaybeHasMarked         = {marked?: marked.MarkedOptions};
-export type MaybeHasCustomTags     = {customTags?: Schema.CustomTag[]};
+export type MaybeHasCustomTags     = {customTags?: CustomTagFunc[] };
 
 export type LoaderState =
     Pick<loader.LoaderContext, "resourcePath" | "rootContext" | "context" | "resourceQuery"> &
@@ -156,15 +157,15 @@ const tagInclude = ({incs, context, tag, docRoot}: HasIncMap & HasTagStr & Loade
     }
 });
 
-const multiYamlParse = (cache: LoaderState, content: string, options: LoaderOptions) => {
+const multiYamlParse = (state: LoaderState, content: string, options: LoaderOptions) => {
     const incs: IncMap = {};
-    const {customTags: MaybeCustomTags} = options;
+    const {customTags: MaybeCustomTagsFuncs} = options;
     const includeTags = ["!include", "!yaml", "!md", "!json"].map(
-        tag => tagInclude({ ...cache, incs, tag })
+        tag => tagInclude({ ...state, incs, tag })
     );
     const customTags = [
         ...includeTags,
-        ...(MaybeCustomTags || [])
+        ...(MaybeCustomTagsFuncs || []).map( CustomTag => CustomTag(state) )
     ];
     const YAMLoptions: YAML.Options = { ...defaultOptions, customTags };
     const doc = YAML.parseDocument( content, YAMLoptions );
@@ -430,6 +431,7 @@ const MYLoader = function (this: loader.LoaderContext) {
     return;
 }
 
+export {getMarkdown};
 
 // noinspection JSUnusedGlobalSymbols
 export default MYLoader;

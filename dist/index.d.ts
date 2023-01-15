@@ -22,6 +22,7 @@ export declare type HasDocRoot = {
 export declare type MaybeHasRootContext = Partial<HasRootContext>;
 export declare type LoaderOptions = MaybeKeepFiles & MaybeKeepFilesRoots & MaybeHasSpace & MaybeHasRootContext & MaybeHasCustomTags & MaybeHasMdImageLoader & MaybeHasMarked;
 export declare type MdImageLoaderFunc = (state: LoaderState, href: string, baseUrl: string) => string;
+export declare type CustomTagFunc = (state: LoaderState) => Schema.CustomTag;
 export declare type MaybeHasMdImageLoader = {
     mdImageLoader?: MdImageLoaderFunc;
 };
@@ -29,7 +30,7 @@ export declare type MaybeHasMarked = {
     marked?: marked.MarkedOptions;
 };
 export declare type MaybeHasCustomTags = {
-    customTags?: Schema.CustomTag[];
+    customTags?: CustomTagFunc[];
 };
 export declare type LoaderState = Pick<loader.LoaderContext, "resourcePath" | "rootContext" | "context" | "resourceQuery"> & MaybeHasFrom & HasDocRoot;
 export declare type IncDeep = string | number;
@@ -57,5 +58,10 @@ export declare type HasTagStr = {
 export declare class IncludeError extends Error {
     constructor(err: string, fileName: string);
 }
+declare const getMarkdown: (content: string, { marked: maybeMarkedOptions, mdImageLoader }: LoaderOptions, state: LoaderState) => {
+    doc: string;
+    incs: IncMap;
+};
 declare const MYLoader: (this: loader.LoaderContext) => void;
+export { getMarkdown };
 export default MYLoader;

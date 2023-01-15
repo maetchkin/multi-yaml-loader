@@ -30,7 +30,7 @@ var __rest = (this && this.__rest) || function (s, e) {
     return t;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.IncludeError = void 0;
+exports.getMarkdown = exports.IncludeError = void 0;
 // @ts-ignore
 const loader_utils_1 = require("loader-utils");
 // @ts-ignore
@@ -109,13 +109,13 @@ const tagInclude = ({ incs, context, tag, docRoot }) => ({
         return null;
     }
 });
-const multiYamlParse = (cache, content, options) => {
+const multiYamlParse = (state, content, options) => {
     const incs = {};
-    const { customTags: MaybeCustomTags } = options;
-    const includeTags = ["!include", "!yaml", "!md", "!json"].map(tag => tagInclude(Object.assign(Object.assign({}, cache), { incs, tag })));
+    const { customTags: MaybeCustomTagsFuncs } = options;
+    const includeTags = ["!include", "!yaml", "!md", "!json"].map(tag => tagInclude(Object.assign(Object.assign({}, state), { incs, tag })));
     const customTags = [
         ...includeTags,
-        ...(MaybeCustomTags || [])
+        ...(MaybeCustomTagsFuncs || []).map(CustomTag => CustomTag(state))
     ];
     const YAMLoptions = Object.assign(Object.assign({}, defaultOptions), { customTags });
     const doc = YAML.parseDocument(content, YAMLoptions);
@@ -144,6 +144,7 @@ const getMarkdown = (content, { marked: maybeMarkedOptions = {}, mdImageLoader }
     const doc = marked_1.marked(content);
     return { doc, incs: NoIncs };
 };
+exports.getMarkdown = getMarkdown;
 const syncParseYaml = (state, options) => {
     const ext = path.extname(state.resourcePath).toLowerCase();
     const content = fs.readFileSync(state.resourcePath, { encoding: 'utf8' });

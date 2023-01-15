@@ -222,15 +222,17 @@ test(
         {
             options: {
                 customTags: [
-                    ({
+                    (state: LoaderState) => ({
                         tag: '!custom',
                         identify:  () => true,
                         resolve: (doc, cst) => {
+                            const {resourcePath, context} = state;
                             const value = 'strValue' in cst
                                 ? (cst as {strValue: any} ).strValue
                                 : ''
                             ;
-                            return `custom[${value}]`;
+                            const resource = resourcePath.replace(context, '').replace(/^\//, '');
+                            return `custom[${value}][${resource}]`;
                         }
                     }) as Schema.CustomTag
                 ]
@@ -241,7 +243,7 @@ test(
                 data => {
                     const {name, content} = data.result;
                     expect(name).toEqual("has-custom-tags");
-                    expect(content).toEqual("custom[custom content]");
+                    expect(content).toEqual("custom[custom content][has-custom-tags.yaml]");
                 }
             )
 );
