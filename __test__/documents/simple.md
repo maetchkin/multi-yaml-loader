@@ -3,6 +3,31 @@
 🐞 content 
 ~~~
 
+---
+
+<details>
+<summary>list</summary>
+
+### Items
+* Vegetables
+* Fruits
+* Fish
+
+</details>
+
+---
+
+| First Header  | Second Header |
+| ------------- | ------------- |
+| Content Cell  | Content Cell  |
+| Content Cell  | Content Cell  |
+
+---
+
+
+
+
+
 - item
 - item
 - item

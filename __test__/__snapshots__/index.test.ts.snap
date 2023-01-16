@@ -4,6 +4,36 @@ exports[`!md marked BaseURL: md-baseurl-include-content 1`] = `
 "<p>#MD Example</p>
 <pre><code>🐞 content 
 </code></pre>
+<hr>
+<details>
+<summary>list</summary>
+
+<h3 id=\\"items\\">Items</h3>
+<ul>
+<li>Vegetables</li>
+<li>Fruits</li>
+<li>Fish</li>
+</ul>
+</details>
+
+<hr>
+<table>
+<thead>
+<tr>
+<th>First Header</th>
+<th>Second Header</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Content Cell</td>
+<td>Content Cell</td>
+</tr>
+<tr>
+<td>Content Cell</td>
+<td>Content Cell</td>
+</tr>
+</tbody></table>
+<hr>
 <ul>
 <li>item</li>
 <li>item</li>
@@ -26,6 +56,36 @@ exports[`!md mdImageLoader: md-mdImageLoader-content 1`] = `
 "<p>#MD Example</p>
 <pre><code>🐞 content 
 </code></pre>
+<hr>
+<details>
+<summary>list</summary>
+
+<h3 id=\\"items\\">Items</h3>
+<ul>
+<li>Vegetables</li>
+<li>Fruits</li>
+<li>Fish</li>
+</ul>
+</details>
+
+<hr>
+<table>
+<thead>
+<tr>
+<th>First Header</th>
+<th>Second Header</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Content Cell</td>
+<td>Content Cell</td>
+</tr>
+<tr>
+<td>Content Cell</td>
+<td>Content Cell</td>
+</tr>
+</tbody></table>
+<hr>
 <ul>
 <li>item</li>
 <li>item</li>
@@ -75,6 +135,36 @@ exports[`!md: md-include-content 1`] = `
 "<p>#MD Example</p>
 <pre><code>🐞 content 
 </code></pre>
+<hr>
+<details>
+<summary>list</summary>
+
+<h3 id=\\"items\\">Items</h3>
+<ul>
+<li>Vegetables</li>
+<li>Fruits</li>
+<li>Fish</li>
+</ul>
+</details>
+
+<hr>
+<table>
+<thead>
+<tr>
+<th>First Header</th>
+<th>Second Header</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Content Cell</td>
+<td>Content Cell</td>
+</tr>
+<tr>
+<td>Content Cell</td>
+<td>Content Cell</td>
+</tr>
+</tbody></table>
+<hr>
 <ul>
 <li>item</li>
 <li>item</li>
