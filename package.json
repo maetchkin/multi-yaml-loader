@@ -1,20 +1,20 @@
 {
   "name": "multi-yaml-loader",
-  "version": "1.6.0",
+  "version": "2.0.0",
   "author": "Anton Kirshanov <maetchkin@gmail.com> (https://github.com/maetchkin)",
   "private": false,
   "description": "YAML loader for webpack with !include support",
-  "main": "index.js",
-  "files": [
-    "index.js",
-    "YamlIncludeError.js"
-  ],
+  "main": "./dist/index.js",
   "repository": {
     "type": "git",
     "url": "git://github.com/maetchkin/multi-yaml-loader.git"
   },
   "scripts": {
-    "test": "jest"
+    "check": "tsc -p src --noEmit -w",
+    "tsc": "tsc -p src",
+    "pretest": "npm run tsc",
+    "test": "jest --runInBand --detectOpenHandles __test__ ",
+    "clean": "rm -rf package-lock.json node_modules"
   },
   "keywords": [
     "yaml",
@@ -24,11 +24,27 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "loader-utils": "^2.0.0",
+    "marked": "^4.2.5",
     "tmp": "^0.2.1",
     "yaml": "^1.10.0"
   },
   "devDependencies": {
-    "jest": "^26.0.1"
+    "@babel/core": "^7.14.2",
+    "@babel/parser": "^7.14.2",
+    "@babel/types": "^7.14.2",
+    "@types/jest": "^26.0.23",
+    "@types/loader-utils": "^2.0.2",
+    "@types/marked": "^4.0.8",
+    "@types/tmp": "^0.2.0",
+    "@types/webpack": "^4.41.27",
+    "babel-jest": "^26.6.3",
+    "jest": "^26.6.3",
+    "memfs": "^3.2.2",
+    "multi-yaml-loader": "file:./",
+    "ts-jest": "^26.5.6",
+    "typescript": "^4.2.4",
+    "webpack": "^4.46.0"
   },
   "engines": {
     "node": ">=14.0.0"
