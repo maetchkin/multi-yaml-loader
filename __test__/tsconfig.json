@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "rootDir": "."
+    "rootDir": ".",
+    "skipLibCheck": true
   },
   "include": ["./**/*.test.ts"]
 }

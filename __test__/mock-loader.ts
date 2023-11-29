@@ -24,10 +24,10 @@ export class MockLoaderContext implements LoaderState {
     ) {
         this.query         = options || void(0);
         this.resourceQuery = resourceQuery;
-        this.resourcePath  = path.resolve(__dirname, file);
+        this.resourcePath  = path.join(__dirname, file);
         this.rootContext   = path.resolve(process.env.INIT_CWD || __dirname);
         this.context       = path.dirname(this.resourcePath);
-        this.docRoot       = path.dirname(this.resourcePath);
+        this.docRoot       = path.dirname(path.dirname(this.resourcePath));
         this.async = () => (err, res) => {
             err
                 ? reject(err)

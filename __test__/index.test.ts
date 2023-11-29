@@ -3,9 +3,11 @@ import * as fs                              from 'fs';
 import * as tmp                             from 'tmp';
 import Loader, {IncludeError}               from 'multi-yaml-loader';
 import {Schema}                             from "yaml/types";
+// @ts-ignore
 import {LoaderState}                        from "../src";
 import {MockLoaderContext}                  from './mock-loader';
 import type {LoaderOptionsQuery}            from './mock-loader';
+import sanititzeSnapshot from "./sanitizeSnapshot";
 
 export const createLoading = (file: string, options?: LoaderOptionsQuery) =>
     new Promise<string>(
@@ -27,6 +29,17 @@ export const createLoading = (file: string, options?: LoaderOptionsQuery) =>
 test(
     'no include',
     () => createLoading("documents/simple.yaml")
+        .then(
+            data => expect(data).toHaveProperty(
+                'result',
+                { name: 'simple' }
+            )
+        )
+);
+
+test(
+    'start with /',
+    () => createLoading("/documents/simple.yaml")
         .then(
             data => expect(data).toHaveProperty(
                 'result',
@@ -161,7 +174,7 @@ test(
                 data => {
                     const {name, content} = data.result;
                     expect(name).toEqual("has-md-include");
-                    expect(content).toMatchSnapshot("md-include-content");
+                    expect(sanititzeSnapshot(content)).toMatchSnapshot("md-include-content");
                 }
             )
 );
@@ -173,7 +186,7 @@ test(
                 data => {
                     const {name, content} = data.result;
                     expect(name).toEqual("has-md-include");
-                    expect(content).toMatchSnapshot("md-baseurl-include-content");
+                    expect(sanititzeSnapshot(content)).toMatchSnapshot("md-baseurl-include-content");
                 }
             )
 );
@@ -196,8 +209,9 @@ test(
                 data => {
                     const {name, content} = data.result;
                     expect(name).toEqual("has-md-include");
-                    expect(content).toMatchSnapshot("md-mdImageLoader-content");
-                    expect(mdImageLoaderLog).toMatchSnapshot("md-mdImageLoader-mdImageLoaderLog");
+
+                    expect(sanititzeSnapshot(content)).toMatchSnapshot("md-mdImageLoader-content");
+                    expect(sanititzeSnapshot(mdImageLoaderLog)).toMatchSnapshot("md-mdImageLoader-mdImageLoaderLog");
                 }
             )
     }
