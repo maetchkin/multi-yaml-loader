@@ -13,6 +13,7 @@ export const createLoading = (file: string, options?: LoaderOptionsQuery) =>
         (resolve, reject) => {
             const ctx = new MockLoaderContext(file, resolve, reject, options || {});
             Loader.call(ctx);
+            console.log(ctx)
         }
     )
         .then(
@@ -28,6 +29,17 @@ export const createLoading = (file: string, options?: LoaderOptionsQuery) =>
 test(
     'no include',
     () => createLoading("documents/simple.yaml")
+        .then(
+            data => expect(data).toHaveProperty(
+                'result',
+                { name: 'simple' }
+            )
+        )
+);
+
+test(
+    'start with /',
+    () => createLoading("/documents/simple.yaml")
         .then(
             data => expect(data).toHaveProperty(
                 'result',
