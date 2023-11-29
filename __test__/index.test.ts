@@ -3,6 +3,7 @@ import * as fs                              from 'fs';
 import * as tmp                             from 'tmp';
 import Loader, {IncludeError}               from 'multi-yaml-loader';
 import {Schema}                             from "yaml/types";
+// @ts-ignore
 import {LoaderState}                        from "../src";
 import {MockLoaderContext}                  from './mock-loader';
 import type {LoaderOptionsQuery}            from './mock-loader';

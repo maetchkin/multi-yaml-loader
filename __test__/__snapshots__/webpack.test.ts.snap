@@ -371,7 +371,7 @@ Object {
           "_source": ReplaceSource {
             "_name": undefined,
             "_source": OriginalSource {
-              "_name": "/Users/bogdan/sirius/multi-yaml-loader/dist/index.js??ref--4-rules-0!/Users/bogdan/sirius/multi-yaml-loader/__test__/documents/simple.yaml",
+              "_name": "/Users/andrey/multi-yaml-loader/dist/index.js??ref--4-rules-0!/Users/andrey/multi-yaml-loader/__test__/documents/simple.yaml",
               "_value": "
     function unpack(packed) {
     const [docMap, root] = JSON.parse(JSON.stringify(packed));
@@ -462,7 +462,7 @@ Object {
       ],
     },
     "emitted": true,
-    "existsAt": "/Users/bogdan/sirius/multi-yaml-loader/outputs/main.bundle.js",
+    "existsAt": "/Users/andrey/multi-yaml-loader/outputs/main.bundle.js",
     "listMap": [Function],
     "node": [Function],
   },
