@@ -7,13 +7,13 @@ import {Schema}                             from "yaml/types";
 import {LoaderState}                        from "../src";
 import {MockLoaderContext}                  from './mock-loader';
 import type {LoaderOptionsQuery}            from './mock-loader';
+import sanititzeSnapshot from "./sanitizeSnapshot";
 
 export const createLoading = (file: string, options?: LoaderOptionsQuery) =>
     new Promise<string>(
         (resolve, reject) => {
             const ctx = new MockLoaderContext(file, resolve, reject, options || {});
             Loader.call(ctx);
-            console.log(ctx)
         }
     )
         .then(
@@ -174,7 +174,7 @@ test(
                 data => {
                     const {name, content} = data.result;
                     expect(name).toEqual("has-md-include");
-                    expect(content).toMatchSnapshot("md-include-content");
+                    expect(sanititzeSnapshot(content)).toMatchSnapshot("md-include-content");
                 }
             )
 );
@@ -186,7 +186,7 @@ test(
                 data => {
                     const {name, content} = data.result;
                     expect(name).toEqual("has-md-include");
-                    expect(content).toMatchSnapshot("md-baseurl-include-content");
+                    expect(sanititzeSnapshot(content)).toMatchSnapshot("md-baseurl-include-content");
                 }
             )
 );
@@ -209,8 +209,9 @@ test(
                 data => {
                     const {name, content} = data.result;
                     expect(name).toEqual("has-md-include");
-                    expect(content).toMatchSnapshot("md-mdImageLoader-content");
-                    expect(mdImageLoaderLog).toMatchSnapshot("md-mdImageLoader-mdImageLoaderLog");
+
+                    expect(sanititzeSnapshot(content)).toMatchSnapshot("md-mdImageLoader-content");
+                    expect(sanititzeSnapshot(mdImageLoaderLog)).toMatchSnapshot("md-mdImageLoader-mdImageLoaderLog");
                 }
             )
     }

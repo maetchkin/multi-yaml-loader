@@ -109,23 +109,23 @@ Array [
   Object {
     "href": "./img.png",
     "state": Object {
-      "context": "/Users/andrey/multi-yaml-loader/__test__/documents",
-      "docRoot": "/Users/andrey/multi-yaml-loader/__test__/documents",
-      "from": "/Users/andrey/multi-yaml-loader/__test__/documents/has-md-include.yaml",
-      "resourcePath": "/Users/andrey/multi-yaml-loader/__test__/documents/simple.md",
+      "context": "/__test__/documents",
+      "docRoot": "/__test__/documents",
+      "from": "/__test__/documents/has-md-include.yaml",
+      "resourcePath": "/__test__/documents/simple.md",
       "resourceQuery": "?",
-      "rootContext": "/Users/andrey/multi-yaml-loader",
+      "rootContext": "/__test__",
     },
   },
   Object {
     "href": "./path/to/img/img.png",
     "state": Object {
-      "context": "/Users/andrey/multi-yaml-loader/__test__/documents",
-      "docRoot": "/Users/andrey/multi-yaml-loader/__test__/documents",
-      "from": "/Users/andrey/multi-yaml-loader/__test__/documents/has-md-include.yaml",
-      "resourcePath": "/Users/andrey/multi-yaml-loader/__test__/documents/simple.md",
+      "context": "/__test__/documents",
+      "docRoot": "/__test__/documents",
+      "from": "/__test__/documents/has-md-include.yaml",
+      "resourcePath": "/__test__/documents/simple.md",
       "resourceQuery": "?",
-      "rootContext": "/Users/andrey/multi-yaml-loader",
+      "rootContext": "/__test__",
     },
   },
 ]
