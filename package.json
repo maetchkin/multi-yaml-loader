@@ -1,6 +1,6 @@
 {
   "name": "multi-yaml-loader",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "author": "Anton Kirshanov <maetchkin@gmail.com> (https://github.com/maetchkin)",
   "private": false,
   "description": "YAML loader for webpack with !include support",
@@ -37,14 +37,16 @@
     "@types/loader-utils": "^2.0.2",
     "@types/marked": "^4.0.8",
     "@types/tmp": "^0.2.0",
-    "@types/webpack": "^4.41.27",
+    "@types/webpack5": "npm:@types/webpack@5.x.x",
+    "@types/webpack4": "npm:@types/webpack@4.x.x",
     "babel-jest": "^26.6.3",
     "jest": "^26.6.3",
     "memfs": "^3.2.2",
     "multi-yaml-loader": "file:./",
     "ts-jest": "^26.5.6",
-    "typescript": "^4.2.4",
-    "webpack": "^4.46.0"
+    "typescript": ">=4",
+    "webpack4": "npm:webpack@4.x.x",
+    "webpack5": "npm:webpack@5.x.x"
   },
   "engines": {
     "node": ">=14.0.0"

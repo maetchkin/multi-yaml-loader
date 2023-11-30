@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -30,12 +34,9 @@ var __rest = (this && this.__rest) || function (s, e) {
     return t;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMarkdown = exports.IncludeError = void 0;
-// @ts-ignore
+exports.Loader = exports.getMarkdown = exports.IncludeError = void 0;
 const loader_utils_1 = require("loader-utils");
-// @ts-ignore
 const path = __importStar(require("path"));
-// @ts-ignore
 const fs = __importStar(require("fs"));
 const marked_1 = require("marked");
 const YAML = __importStar(require("yaml"));
@@ -141,7 +142,7 @@ const getMarkdown = (content, { marked: maybeMarkedOptions = {}, mdImageLoader }
     renderer.image = rendererImage(state, mdImageLoader);
     const options = Object.assign(Object.assign({}, markedOptions), { renderer });
     marked_1.marked.setOptions(options);
-    const doc = marked_1.marked(content);
+    const doc = (0, marked_1.marked)(content);
     return { doc, incs: NoIncs };
 };
 exports.getMarkdown = getMarkdown;
@@ -279,14 +280,14 @@ function unpack(packed) {
     };
     return resolveMerge(resolveIncs(root));
 }
-const MYLoader = function () {
+const Loader = function () {
     const callback = this.async();
     const { resourcePath, rootContext, context, resourceQuery } = this;
     const state = { resourcePath, rootContext, context, resourceQuery, docRoot: context };
     if (this.addContextDependency) {
         this.addContextDependency(context);
     }
-    const options = Object.assign(Object.assign(Object.assign({}, loader_utils_1.getOptions(this)), loader_utils_1.parseQuery(this.resourceQuery || '?')), { rootContext });
+    const options = Object.assign(Object.assign(Object.assign({}, (0, loader_utils_1.getOptions)(this)), (0, loader_utils_1.parseQuery)(this.resourceQuery || '?')), { rootContext });
     getModulePromise(state, options)
         .then((result) => {
         result && callback
@@ -296,5 +297,5 @@ const MYLoader = function () {
         .catch(callback);
     return;
 };
-// noinspection JSUnusedGlobalSymbols
-exports.default = MYLoader;
+exports.Loader = Loader;
+exports.default = Loader;

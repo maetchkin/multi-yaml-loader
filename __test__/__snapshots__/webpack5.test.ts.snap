@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`webpack5: documents-simple 1`] = `
+Object {
+  "main.bundle.js": Object {
+    "_size": 3760,
+  },
+}
+`;

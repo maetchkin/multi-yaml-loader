@@ -9,8 +9,15 @@
     "noUnusedLocals":     true,
     "noUnusedParameters": true,
     "esModuleInterop":    true,
-    "declaration":        true
+    "declaration":        true,
+    "skipLibCheck":       true
   },
 
-  "include": ["**/*.ts"]
+  "include": ["**/*.ts"],
+
+  "exclude": [
+    "node_modules",
+    "./node_modules",
+    "./node_modules/*"
+  ]
 }

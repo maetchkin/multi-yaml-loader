@@ -1,16 +1,16 @@
 import * as path                        from "path";
-import * as webpack                     from "webpack";
-import type { Configuration }           from "webpack";
+import * as webpack                     from "webpack4";
+import type { Configuration }           from "webpack4";
 
 
-const getWebpackCompiler = (entry: string, loaderOptions = {}, config: Partial<Configuration> = {}) => {
+const getWebpack4Compiler = (entry: string, loaderOptions = {}, config: Partial<Configuration> = {}) => {
   const fullConfig: Configuration = {
     mode:    "development",
     devtool:  false,
     entry:  path.resolve(__dirname, entry),
 
     output: {
-      path: path.resolve(__dirname, "../outputs"),
+      path: path.resolve(__dirname, "../outputs/v4"),
       filename: "[name].bundle.js",
       chunkFilename: "[name].chunk.js"
     },
@@ -42,4 +42,4 @@ const getWebpackCompiler = (entry: string, loaderOptions = {}, config: Partial<C
   return compiler;
 };
 
-export default getWebpackCompiler;
+export default getWebpack4Compiler;

@@ -1,19 +1,13 @@
-// @ts-ignore
-import { loader }               from 'webpack';
-// @ts-ignore
 import {getOptions, parseQuery} from 'loader-utils';
-// @ts-ignore
 import * as path                from 'path';
-// @ts-ignore
 import * as fs                  from 'fs';
-
 import {marked}                 from 'marked';
-
 import * as YAML                from 'yaml';
 import { Type }                 from 'yaml/util';
 import type { Schema }          from 'yaml/types';
 import type { CST }             from 'yaml/parse-cst';
-
+import webpack4                 from 'webpack4';
+import {LoaderContext}          from 'webpack5';
 
 
 export type MaybeKeepFiles       = {keepFiles?:      boolean};
@@ -39,7 +33,7 @@ export type MaybeHasMarked         = {marked?: marked.MarkedOptions};
 export type MaybeHasCustomTags     = {customTags?: CustomTagFunc[] };
 
 export type LoaderState =
-    Pick<loader.LoaderContext, "resourcePath" | "rootContext" | "context" | "resourceQuery"> &
+    Pick<webpack4.loader.LoaderContext & LoaderContext<any>, "resourcePath" | "rootContext" | "context" | "resourceQuery"> &
     MaybeHasFrom &
     HasDocRoot
 ;
@@ -403,7 +397,7 @@ function unpack (packed: PackedResult): any {
     return resolveMerge( resolveIncs(root) );
 }
 
-const MYLoader = function (this: loader.LoaderContext) {
+const Loader = function (this: webpack4.loader.LoaderContext | LoaderContext<any>) {
     const callback = this.async();
     const { resourcePath, rootContext, context, resourceQuery } = this;
     const state: LoaderState = { resourcePath, rootContext, context, resourceQuery, docRoot: context };
@@ -412,6 +406,7 @@ const MYLoader = function (this: loader.LoaderContext) {
     }
 
     const options: LoaderOptions = {
+        // @ts-ignore
         ...getOptions(this),
         ...parseQuery(this.resourceQuery || '?'),
            rootContext
@@ -431,7 +426,6 @@ const MYLoader = function (this: loader.LoaderContext) {
     return;
 }
 
-export {getMarkdown};
+export {getMarkdown, Loader};
 
-// noinspection JSUnusedGlobalSymbols
-export default MYLoader;
+export default Loader;

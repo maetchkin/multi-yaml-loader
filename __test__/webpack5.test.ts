@@ -1,5 +1,6 @@
-import getWebpackCompiler from './getWebpackCompiler';
-import type { Compiler, Stats }           from "webpack";
+import type { Compiler, Stats }           from 'webpack5';
+import getWebpack5Compiler                from './getWebpack5Compiler';
+import sanitizeSnapshot                   from './sanitizeSnapshot';
 
 const compile =  (compiler: Compiler) =>
     new Promise(
@@ -14,15 +15,15 @@ const compile =  (compiler: Compiler) =>
 ;
 
 test(
-    'webpack',
+    'webpack5',
     () => {
-        const compiler = getWebpackCompiler('documents/simple.yaml', {keepFiles:true, space:true});
+        const compiler = getWebpack5Compiler('documents/simple.yaml', {keepFiles:true, space:true});
         return compile(compiler)
             .then(
                 (stats: Stats) => {
                     //console.log('stats', stats.toString() );
                     const code = stats?.compilation?.assets;
-                    expect(code).toMatchSnapshot("documents-simple");
+                    expect(sanitizeSnapshot(code)).toMatchSnapshot("documents-simple");
                 }
             )
         ;

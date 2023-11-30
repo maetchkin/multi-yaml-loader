@@ -1,10 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`webpack: documents-simple 1`] = `
+exports[`webpack4: documents-simple 1`] = `
 Object {
-  "main.bundle.js": CachedSource {
+  "main.bundle.js": Object {
     "_cachedMaps": Object {},
-    "_cachedSize": undefined,
     "_cachedSource": "/******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -177,13 +176,13 @@ Object {
 /***/ })
 
 /******/ });",
-    "_source": ConcatSource {
+    "_source": Object {
       "children": Array [
         "/******/ (function(modules) { // webpackBootstrap
 ",
-        PrefixSource {
+        Object {
           "_prefix": "/******/",
-          "_source": OriginalSource {
+          "_source": Object {
             "_name": "webpack/bootstrap",
             "_value": " 	// The module cache
  	var installedModules = {};
@@ -292,9 +291,8 @@ Object {
         "/***/ (function(module, exports) {
 
 ",
-        CachedSource {
+        Object {
           "_cachedMaps": Object {},
-          "_cachedSize": undefined,
           "_cachedSource": "
     function unpack(packed) {
     const [docMap, root] = JSON.parse(JSON.stringify(packed));
@@ -368,10 +366,9 @@ Object {
     const result = unpack(packed);
     module.exports = { result, packed, unpack };
 ",
-          "_source": ReplaceSource {
-            "_name": undefined,
-            "_source": OriginalSource {
-              "_name": "/Users/bogdan/sirius/multi-yaml-loader/dist/index.js??ref--4-rules-0!/Users/bogdan/sirius/multi-yaml-loader/__test__/documents/simple.yaml",
+          "_source": Object {
+            "_source": Object {
+              "_name": "/dist/index.js??ref--4-rules-0!/__test__/documents/simple.yaml",
               "_value": "
     function unpack(packed) {
     const [docMap, root] = JSON.parse(JSON.stringify(packed));
@@ -448,8 +445,6 @@ Object {
             },
             "replacements": Array [],
           },
-          "listMap": [Function],
-          "node": [Function],
         },
         "
 
@@ -462,9 +457,7 @@ Object {
       ],
     },
     "emitted": true,
-    "existsAt": "/Users/bogdan/sirius/multi-yaml-loader/outputs/main.bundle.js",
-    "listMap": [Function],
-    "node": [Function],
+    "existsAt": "/outputs/v4/main.bundle.js",
   },
 }
 `;
