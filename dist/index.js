@@ -282,8 +282,8 @@ function unpack(packed) {
 }
 const Loader = function () {
     const callback = this.async();
-    const { resourcePath, rootContext, context, resourceQuery } = this;
-    const state = { resourcePath, rootContext, context, resourceQuery, docRoot: context };
+    const { resourcePath, rootContext, context, resourceQuery, docRoot } = this;
+    const state = { resourcePath, rootContext, context, resourceQuery, docRoot };
     if (this.addContextDependency) {
         this.addContextDependency(context);
     }

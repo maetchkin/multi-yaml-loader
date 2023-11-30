@@ -1,2 +1,2 @@
 name: abs-include to simple
-content: !include /simple.yaml
+content: !include /documents/simple.yaml

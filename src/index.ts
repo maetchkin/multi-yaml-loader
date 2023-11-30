@@ -37,6 +37,7 @@ export type LoaderState =
     MaybeHasFrom &
     HasDocRoot
 ;
+export type UnionLoaderContext = webpack4.loader.LoaderContext | LoaderContext<any>;
 
 export type IncDeep    = string | number;
 export type IncList    = IncDeep[][];
@@ -397,10 +398,10 @@ function unpack (packed: PackedResult): any {
     return resolveMerge( resolveIncs(root) );
 }
 
-const Loader = function (this: webpack4.loader.LoaderContext | LoaderContext<any>) {
+const Loader = function (this: UnionLoaderContext & HasDocRoot) {
     const callback = this.async();
-    const { resourcePath, rootContext, context, resourceQuery } = this;
-    const state: LoaderState = { resourcePath, rootContext, context, resourceQuery, docRoot: context };
+    const {resourcePath, rootContext, context, resourceQuery, docRoot} = this;
+    const state: LoaderState = {resourcePath, rootContext, context, resourceQuery, docRoot};
     if (this.addContextDependency) {
         this.addContextDependency(context);
     }

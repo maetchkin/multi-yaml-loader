@@ -48,12 +48,23 @@ test(
 );
 
 test(
-    'with include',
+    'include with absolute',
+    () => createLoading("documents/absolute.yaml")
+        .then(
+            data => expect(data).toHaveProperty(
+                'result',
+                {name: 'example', content: {name: 'simple'}}
+            )
+        )
+);
+
+test(
+    'with include ',
     () => createLoading("documents/example.yaml")
         .then(
             data => expect(data).toHaveProperty(
                 'result',
-                { name: 'example', content: { name: 'simple' } }
+                {name: 'example', content: {name: 'simple'}}
             )
         )
 );

@@ -1,0 +1,2 @@
+name: example
+content: !include /documents/simple.yaml
