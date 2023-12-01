@@ -1,2 +1,2 @@
 name: example
-content: !include /documents/simple.yaml
+content: !include /__test__/documents/simple.yaml

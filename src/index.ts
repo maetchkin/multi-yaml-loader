@@ -398,9 +398,25 @@ function unpack (packed: PackedResult): any {
     return resolveMerge( resolveIncs(root) );
 }
 
+function findPackageJson(currentPath: string): string {
+    const packageJsonPath = path.join(currentPath, 'package.json');
+
+    if (fs.existsSync(packageJsonPath)) {
+        return path.dirname(packageJsonPath);
+    }
+
+    const parentPath = path.dirname(currentPath);
+
+    if (currentPath === parentPath) {
+        throw new Error("package.json not detected")
+    }
+    return findPackageJson(parentPath);
+}
+
 const Loader = function (this: UnionLoaderContext & HasDocRoot) {
     const callback = this.async();
-    const {resourcePath, rootContext, context, resourceQuery, docRoot} = this;
+    const {resourcePath, rootContext, context, resourceQuery} = this;
+    const docRoot = findPackageJson(context)
     const state: LoaderState = {resourcePath, rootContext, context, resourceQuery, docRoot};
     if (this.addContextDependency) {
         this.addContextDependency(context);
