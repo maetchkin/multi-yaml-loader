@@ -60,6 +60,9 @@ export type HasTagStr = {
 export declare class IncludeError extends Error {
     constructor(err: string, fileName: string);
 }
+export declare class PackageJsonNotFoundError extends Error {
+    constructor();
+}
 declare const getMarkdown: (content: string, { marked: maybeMarkedOptions, mdImageLoader }: LoaderOptions, state: LoaderState) => {
     doc: string;
     incs: IncMap;

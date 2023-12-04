@@ -126,6 +126,13 @@ export class IncludeError extends Error {
     }
 }
 
+export class PackageJsonNotFoundError extends Error {
+    constructor() {
+        super("package.json not detected");
+        this.name = 'PackageJsonNotFoundError';
+    }
+}
+
 const defaultOptions = {
     prettyErrors: true,
     keepCstNodes: true,
@@ -398,17 +405,17 @@ function unpack (packed: PackedResult): any {
     return resolveMerge( resolveIncs(root) );
 }
 
-function findPackageJson(currentPath: string): string {
-    const packageJsonPath = path.join(currentPath, 'package.json');
+function findPackageJson(currentPath: string): string | null {
+    const packageJsonPath = path.resolve(path.join(currentPath, 'package.json'));
 
     if (fs.existsSync(packageJsonPath)) {
         return path.dirname(packageJsonPath);
     }
 
-    const parentPath = path.dirname(currentPath);
+    const parentPath = path.dirname(path.resolve(currentPath));
 
     if (currentPath === parentPath) {
-        throw new Error("package.json not detected")
+        return null
     }
     return findPackageJson(parentPath);
 }
@@ -417,6 +424,9 @@ const Loader = function (this: UnionLoaderContext & HasDocRoot) {
     const callback = this.async();
     const {resourcePath, rootContext, context, resourceQuery} = this;
     const docRoot = findPackageJson(context)
+    if (docRoot === null) {
+        throw new PackageJsonNotFoundError();
+    }
     const state: LoaderState = {resourcePath, rootContext, context, resourceQuery, docRoot};
     if (this.addContextDependency) {
         this.addContextDependency(context);

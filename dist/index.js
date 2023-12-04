@@ -34,7 +34,7 @@ var __rest = (this && this.__rest) || function (s, e) {
     return t;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Loader = exports.getMarkdown = exports.IncludeError = void 0;
+exports.Loader = exports.getMarkdown = exports.PackageJsonNotFoundError = exports.IncludeError = void 0;
 const loader_utils_1 = require("loader-utils");
 const path = __importStar(require("path"));
 const fs = __importStar(require("fs"));
@@ -90,6 +90,13 @@ class IncludeError extends Error {
     }
 }
 exports.IncludeError = IncludeError;
+class PackageJsonNotFoundError extends Error {
+    constructor() {
+        super("package.json not detected");
+        this.name = 'PackageJsonNotFoundError';
+    }
+}
+exports.PackageJsonNotFoundError = PackageJsonNotFoundError;
 const defaultOptions = {
     prettyErrors: true,
     keepCstNodes: true,
@@ -281,13 +288,13 @@ function unpack(packed) {
     return resolveMerge(resolveIncs(root));
 }
 function findPackageJson(currentPath) {
-    const packageJsonPath = path.join(currentPath, 'package.json');
+    const packageJsonPath = path.resolve(path.join(currentPath, 'package.json'));
     if (fs.existsSync(packageJsonPath)) {
         return path.dirname(packageJsonPath);
     }
-    const parentPath = path.dirname(currentPath);
+    const parentPath = path.dirname(path.resolve(currentPath));
     if (currentPath === parentPath) {
-        throw new Error("package.json not detected");
+        return null;
     }
     return findPackageJson(parentPath);
 }
@@ -295,6 +302,9 @@ const Loader = function () {
     const callback = this.async();
     const { resourcePath, rootContext, context, resourceQuery } = this;
     const docRoot = findPackageJson(context);
+    if (docRoot === null) {
+        throw new PackageJsonNotFoundError();
+    }
     const state = { resourcePath, rootContext, context, resourceQuery, docRoot };
     if (this.addContextDependency) {
         this.addContextDependency(context);
