@@ -127,8 +127,8 @@ export class IncludeError extends Error {
 }
 
 export class PackageJsonNotFoundError extends Error {
-    constructor() {
-        super("package.json not detected");
+    constructor(context: string) {
+        super(`package.json not detected for ${context}`);
         this.name = 'PackageJsonNotFoundError';
     }
 }
@@ -425,7 +425,7 @@ const Loader = function (this: UnionLoaderContext & HasDocRoot) {
     const {resourcePath, rootContext, context, resourceQuery} = this;
     const docRoot = findPackageJson(context)
     if (docRoot === null) {
-        throw new PackageJsonNotFoundError();
+        throw new PackageJsonNotFoundError(context);
     }
     const state: LoaderState = {resourcePath, rootContext, context, resourceQuery, docRoot};
     if (this.addContextDependency) {
