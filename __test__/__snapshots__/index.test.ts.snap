@@ -110,7 +110,7 @@ Array [
     "href": "./img.png",
     "state": Object {
       "context": "/__test__/documents",
-      "docRoot": "/__test__/documents",
+      "docRoot": "",
       "from": "/__test__/documents/has-md-include.yaml",
       "resourcePath": "/__test__/documents/simple.md",
       "resourceQuery": "?",
@@ -121,7 +121,7 @@ Array [
     "href": "./path/to/img/img.png",
     "state": Object {
       "context": "/__test__/documents",
-      "docRoot": "/__test__/documents",
+      "docRoot": "",
       "from": "/__test__/documents/has-md-include.yaml",
       "resourcePath": "/__test__/documents/simple.md",
       "resourceQuery": "?",

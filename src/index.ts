@@ -37,6 +37,7 @@ export type LoaderState =
     MaybeHasFrom &
     HasDocRoot
 ;
+export type UnionLoaderContext = webpack4.loader.LoaderContext | LoaderContext<any>;
 
 export type IncDeep    = string | number;
 export type IncList    = IncDeep[][];
@@ -122,6 +123,13 @@ export class IncludeError extends Error {
     constructor (err: string, fileName: string) {
         super(`Error in ${fileName}:\n${err}`);
         this.name = 'IncludeError';
+    }
+}
+
+export class PackageJsonNotFoundError extends Error {
+    constructor(context: string) {
+        super(`package.json not detected for ${context}`);
+        this.name = 'PackageJsonNotFoundError';
     }
 }
 
@@ -397,10 +405,29 @@ function unpack (packed: PackedResult): any {
     return resolveMerge( resolveIncs(root) );
 }
 
-const Loader = function (this: webpack4.loader.LoaderContext | LoaderContext<any>) {
+function findPackageJson(currentPath: string): string | null {
+    const packageJsonPath = path.resolve(path.join(currentPath, 'package.json'));
+
+    if (fs.existsSync(packageJsonPath)) {
+        return path.dirname(packageJsonPath);
+    }
+
+    const parentPath = path.dirname(path.resolve(currentPath));
+
+    if (currentPath === parentPath) {
+        return null
+    }
+    return findPackageJson(parentPath);
+}
+
+const Loader = function (this: UnionLoaderContext & HasDocRoot) {
     const callback = this.async();
-    const { resourcePath, rootContext, context, resourceQuery } = this;
-    const state: LoaderState = { resourcePath, rootContext, context, resourceQuery, docRoot: context };
+    const {resourcePath, rootContext, context, resourceQuery} = this;
+    const docRoot = findPackageJson(context)
+    if (docRoot === null) {
+        throw new PackageJsonNotFoundError(context);
+    }
+    const state: LoaderState = {resourcePath, rootContext, context, resourceQuery, docRoot};
     if (this.addContextDependency) {
         this.addContextDependency(context);
     }

@@ -34,6 +34,7 @@ export type MaybeHasCustomTags = {
     customTags?: CustomTagFunc[];
 };
 export type LoaderState = Pick<webpack4.loader.LoaderContext & LoaderContext<any>, "resourcePath" | "rootContext" | "context" | "resourceQuery"> & MaybeHasFrom & HasDocRoot;
+export type UnionLoaderContext = webpack4.loader.LoaderContext | LoaderContext<any>;
 export type IncDeep = string | number;
 export type IncList = IncDeep[][];
 export type IncMap = Record<string, IncList>;
@@ -59,10 +60,13 @@ export type HasTagStr = {
 export declare class IncludeError extends Error {
     constructor(err: string, fileName: string);
 }
+export declare class PackageJsonNotFoundError extends Error {
+    constructor();
+}
 declare const getMarkdown: (content: string, { marked: maybeMarkedOptions, mdImageLoader }: LoaderOptions, state: LoaderState) => {
     doc: string;
     incs: IncMap;
 };
-declare const Loader: (this: webpack4.loader.LoaderContext | LoaderContext<any>) => void;
+declare const Loader: (this: UnionLoaderContext & HasDocRoot) => void;
 export { getMarkdown, Loader };
 export default Loader;

@@ -3,7 +3,7 @@ import * as fs                              from 'fs';
 import * as tmp                             from 'tmp';
 import {Schema}                             from 'yaml/types';
 import {IncludeError, Loader}               from 'multi-yaml-loader';
-import {LoaderState}                        from "multi-yaml-loader";
+import {LoaderState, PackageJsonNotFoundError} from "multi-yaml-loader";
 import {MockLoaderContext}                  from './mock-loader';
 import type {LoaderOptionsQuery}            from './mock-loader';
 import sanitizeSnapshot                     from "./sanitizeSnapshot";
@@ -48,12 +48,23 @@ test(
 );
 
 test(
-    'with include',
+    'include with absolute',
+    () => createLoading("documents/absolute.yaml")
+        .then(
+            data => expect(data).toHaveProperty(
+                'result',
+                {name: 'example', content: {name: 'simple'}}
+            )
+        )
+);
+
+test(
+    'with include ',
     () => createLoading("documents/example.yaml")
         .then(
             data => expect(data).toHaveProperty(
                 'result',
-                { name: 'example', content: { name: 'simple' } }
+                {name: 'example', content: {name: 'simple'}}
             )
         )
 );
@@ -260,3 +271,38 @@ test(
                 }
             )
 );
+
+test('no docRoot', () => {
+    const tempDir = tmp.dirSync({ unsafeCleanup: true, keep: false });
+    fs.mkdirSync(path.join(tempDir.name, 'documents'));
+
+    const sourcePath = path.resolve(__dirname, 'documents/example.yaml');
+    const destinationPath = path.join(tempDir.name, 'documents/example.yaml');
+    fs.copyFileSync(sourcePath, destinationPath);
+
+    function MockLoader (file: string, resolve: (res: string) => void, reject: (err: Error | null | undefined) => void) {
+        this.resourcePath  = path.resolve(file);
+        this.rootContext   = path.resolve(tempDir.name);
+        this.context       = path.dirname(this.resourcePath);
+        this.resourceQuery = '?'
+        this.async = () => (err, res) => {
+            err
+                ? reject(err)
+                : res
+                    ? resolve(res)
+                    : reject(new Error('no result'))
+        };
+    }
+
+    expect(
+        new Promise<string>(
+            (resolve, reject) => {
+                const ctx = new MockLoader(destinationPath, resolve, reject);
+                Loader.call(ctx);
+            }
+        )
+    )
+        .rejects.toThrow( PackageJsonNotFoundError )
+
+    tempDir.removeCallback();
+});
