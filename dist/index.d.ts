@@ -61,12 +61,12 @@ export declare class IncludeError extends Error {
     constructor(err: string, fileName: string);
 }
 export declare class PackageJsonNotFoundError extends Error {
-    constructor();
+    constructor(context: string);
 }
 declare const getMarkdown: (content: string, { marked: maybeMarkedOptions, mdImageLoader }: LoaderOptions, state: LoaderState) => {
     doc: string;
     incs: IncMap;
 };
-declare const Loader: (this: UnionLoaderContext & HasDocRoot) => void;
+declare const Loader: (this: UnionLoaderContext) => void;
 export { getMarkdown, Loader };
 export default Loader;

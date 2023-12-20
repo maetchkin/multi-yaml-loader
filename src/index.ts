@@ -420,7 +420,7 @@ function findPackageJson(currentPath: string): string | null {
     return findPackageJson(parentPath);
 }
 
-const Loader = function (this: UnionLoaderContext & HasDocRoot) {
+const Loader = function (this: UnionLoaderContext) {
     const callback = this.async();
     const {resourcePath, rootContext, context, resourceQuery} = this;
     const docRoot = findPackageJson(context)
