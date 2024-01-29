@@ -309,6 +309,9 @@ const Loader = function () {
     if (this.addContextDependency) {
         this.addContextDependency(context);
     }
+    if (this.cacheable) {
+        this.cacheable(false);
+    }
     const options = Object.assign(Object.assign(Object.assign({}, (0, loader_utils_1.getOptions)(this)), (0, loader_utils_1.parseQuery)(this.resourceQuery || '?')), { rootContext });
     getModulePromise(state, options)
         .then((result) => {

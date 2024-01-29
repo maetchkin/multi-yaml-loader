@@ -431,6 +431,9 @@ const Loader = function (this: UnionLoaderContext) {
     if (this.addContextDependency) {
         this.addContextDependency(context);
     }
+    if (this.cacheable) {
+        this.cacheable(false);
+    }
 
     const options: LoaderOptions = {
         // @ts-ignore
