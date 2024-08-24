@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "rootDir": ".",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "esModuleInterop": true
   },
   "include": ["./**/*.test.ts"]
 }

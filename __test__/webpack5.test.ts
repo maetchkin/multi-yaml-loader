@@ -29,3 +29,15 @@ test(
         ;
     }
 );
+
+afterAll(
+    async () => {
+        await new Promise(
+            resolve =>
+                setTimeout(
+                    () => resolve(void(0)),
+                    2500
+                )
+        ); // avoid jest open handle error
+    }
+);

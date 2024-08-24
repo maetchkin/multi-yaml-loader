@@ -1,12 +1,12 @@
-import * as path                            from 'path';
-import * as fs                              from 'fs';
-import * as tmp                             from 'tmp';
-import {Schema}                             from 'yaml/types';
-import {IncludeError, Loader}               from 'multi-yaml-loader';
-import {LoaderState, PackageJsonNotFoundError} from "multi-yaml-loader";
-import {MockLoaderContext}                  from './mock-loader';
-import type {LoaderOptionsQuery}            from './mock-loader';
-import sanitizeSnapshot                     from "./sanitizeSnapshot";
+import * as path                                from 'path';
+import * as fs                                  from 'fs';
+import * as tmp                                 from 'tmp';
+import {Schema}                                 from 'yaml/types';
+import {IncludeError, Loader}                   from 'multi-yaml-loader';
+import {LoaderState, PackageJsonNotFoundError}  from "multi-yaml-loader";
+import {MockLoaderContext}                      from './mock-loader';
+import type {LoaderOptionsQuery}                from './mock-loader';
+import sanitizeSnapshot                         from "./sanitizeSnapshot";
 
 export const createLoading = (file: string, options?: LoaderOptionsQuery) =>
     new Promise<string>(
@@ -65,6 +65,37 @@ test(
             data => expect(data).toHaveProperty(
                 'result',
                 {name: 'example', content: {name: 'simple'}}
+            )
+        )
+);
+
+test(
+    'single quoted key',
+    () => createLoading("documents/single-quoted-key.yaml")
+        .then(
+            data => expect(data).toHaveProperty(
+                'result',
+                {name: 'example', 'content': {name: 'simple'}}
+            )
+        )
+);
+test(
+    'double quoted key',
+    () => createLoading("documents/double-quoted-key.yaml")
+        .then(
+            data => expect(data).toHaveProperty(
+                'result',
+                {name: 'example', 'content': {name: 'simple'}}
+            )
+        )
+);
+test(
+    'num key',
+    () => createLoading("documents/num-key.yaml")
+        .then(
+            data => expect(data).toHaveProperty(
+                'result',
+                {name: 'example', 404: {name: 'simple'}}
             )
         )
 );

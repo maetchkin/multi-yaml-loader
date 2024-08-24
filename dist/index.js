@@ -60,7 +60,8 @@ const getNStr = (node, next) => {
             const filtered = items.filter(filterCSTComment);
             if (filtered) {
                 let pos = filtered.indexOf(next);
-                res = filtered[pos - 1].toString();
+                const ptr = filtered[pos - 1];
+                res = (ptr !== null && 'strValue' in ptr && typeof ptr.strValue === 'string') ? ptr.strValue : ptr.toString();
             }
             break;
     }

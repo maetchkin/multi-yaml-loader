@@ -3,9 +3,9 @@ import * as path                from 'path';
 import * as fs                  from 'fs';
 import {marked}                 from 'marked';
 import * as YAML                from 'yaml';
-import { Type }                 from 'yaml/util';
-import type { Schema }          from 'yaml/types';
-import type { CST }             from 'yaml/parse-cst';
+import {Type}                   from 'yaml/util';
+import type {Schema}            from 'yaml/types';
+import type {CST}               from 'yaml/parse-cst';
 import webpack4                 from 'webpack4';
 import {LoaderContext}          from 'webpack5';
 
@@ -87,7 +87,8 @@ const getNStr = (node: YAML.CST.Node, next: YAML.CST.Node): IncDeep | null => {
                             CST.Scalar    |
                             CST.MapItem
                 );
-                res = filtered[pos - 1].toString();
+                const ptr = filtered[pos - 1];
+                res = (ptr !== null && 'strValue' in ptr && typeof ptr.strValue === 'string' ) ? ptr.strValue : ptr.toString();
             }
         break;
     }

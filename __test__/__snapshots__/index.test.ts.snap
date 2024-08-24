@@ -8,7 +8,7 @@ exports[`!md marked BaseURL: md-baseurl-include-content 1`] = `
 <details>
 <summary>list</summary>
 
-<h3 id=\\"items\\">Items</h3>
+<h3 id="items">Items</h3>
 <ul>
 <li>Vegetables</li>
 <li>Fruits</li>
@@ -40,10 +40,10 @@ exports[`!md marked BaseURL: md-baseurl-include-content 1`] = `
 <li>item</li>
 </ul>
 <p>###img
-<img src=\\"/dist/path/img/img.png\\" alt=\\"img\\"  title=\\"title img\\" class=\\"zoom\\">
+<img src="/dist/path/img/img.png" alt="img"  title="title img" class="zoom">
 ###deep img
-<img src=\\"/dist/path/img/path/to/img/img.png\\" alt=\\"img\\"  title=\\"title deep img\\" class=\\"zoom\\"></p>
-<pre><code class=\\"language-javascript\\">const a = &#39;string&#39;;
+<img src="/dist/path/img/path/to/img/img.png" alt="img"  title="title deep img" class="zoom"></p>
+<pre><code class="language-javascript">const a = &#39;string&#39;;
 function b (arg) {
     console.log(&#39;b&#39;, arg)
 }
@@ -60,7 +60,7 @@ exports[`!md mdImageLoader: md-mdImageLoader-content 1`] = `
 <details>
 <summary>list</summary>
 
-<h3 id=\\"items\\">Items</h3>
+<h3 id="items">Items</h3>
 <ul>
 <li>Vegetables</li>
 <li>Fruits</li>
@@ -92,10 +92,10 @@ exports[`!md mdImageLoader: md-mdImageLoader-content 1`] = `
 <li>item</li>
 </ul>
 <p>###img
-<img src=\\"/dist/path/img/img.png\\" alt=\\"img\\"  title=\\"title img\\" class=\\"zoom\\">
+<img src="/dist/path/img/img.png" alt="img"  title="title img" class="zoom">
 ###deep img
-<img src=\\"/dist/path/img/path/to/img/img.png\\" alt=\\"img\\"  title=\\"title deep img\\" class=\\"zoom\\"></p>
-<pre><code class=\\"language-javascript\\">const a = &#39;string&#39;;
+<img src="/dist/path/img/path/to/img/img.png" alt="img"  title="title deep img" class="zoom"></p>
+<pre><code class="language-javascript">const a = &#39;string&#39;;
 function b (arg) {
     console.log(&#39;b&#39;, arg)
 }
@@ -105,10 +105,10 @@ b(a);
 `;
 
 exports[`!md mdImageLoader: md-mdImageLoader-mdImageLoaderLog 1`] = `
-Array [
-  Object {
+[
+  {
     "href": "./img.png",
-    "state": Object {
+    "state": {
       "context": "/__test__/documents",
       "docRoot": "",
       "from": "/__test__/documents/has-md-include.yaml",
@@ -117,9 +117,9 @@ Array [
       "rootContext": "",
     },
   },
-  Object {
+  {
     "href": "./path/to/img/img.png",
-    "state": Object {
+    "state": {
       "context": "/__test__/documents",
       "docRoot": "",
       "from": "/__test__/documents/has-md-include.yaml",
@@ -139,7 +139,7 @@ exports[`!md: md-include-content 1`] = `
 <details>
 <summary>list</summary>
 
-<h3 id=\\"items\\">Items</h3>
+<h3 id="items">Items</h3>
 <ul>
 <li>Vegetables</li>
 <li>Fruits</li>
@@ -171,10 +171,10 @@ exports[`!md: md-include-content 1`] = `
 <li>item</li>
 </ul>
 <p>###img
-<img src=\\"/img.png\\" alt=\\"img\\"  title=\\"title img\\" class=\\"zoom\\">
+<img src="/img.png" alt="img"  title="title img" class="zoom">
 ###deep img
-<img src=\\"/path/to/img/img.png\\" alt=\\"img\\"  title=\\"title deep img\\" class=\\"zoom\\"></p>
-<pre><code class=\\"language-javascript\\">const a = &#39;string&#39;;
+<img src="/path/to/img/img.png" alt="img"  title="title deep img" class="zoom"></p>
+<pre><code class="language-javascript">const a = &#39;string&#39;;
 function b (arg) {
     console.log(&#39;b&#39;, arg)
 }

@@ -95,62 +95,62 @@
 
 
     function unpack(packed) {
-    const [docMap, root] = JSON.parse(JSON.stringify(packed));
-    const incsReducer = (visit) => (doc, [docptr, incs]) => {
-        const incdoc = resolveIncs(docptr, visit);
-        incs.forEach((inc) => {
-            let ptr = doc;
-            while (inc.length > 1) {
-                ptr = ptr[inc.shift()];
-            }
-            ptr[inc.shift()] = incdoc;
-        });
-        return doc;
-    };
-    const resolveIncs = (docptr, visit = {}) => {
-        let res;
-        if (docptr in visit) {
-            res = docMap[docptr].doc;
-        }
-        else {
-            visit[docptr] = true;
-            const { doc, incs } = docMap[docptr];
-            res = Object.entries(incs).reduce(incsReducer(visit), doc);
-        }
-        return res;
-    };
-    const MERGE_KEY = '<<<';
-    const isObj = (v) => v !== null && typeof (v) === 'object' && !Array.isArray(v);
-    const resolveMerge = (node, visit = []) => {
-        let res;
-        if (visit.includes(node)) {
-            res = node;
-        }
-        else {
-            visit.push(node);
-            if (isObj(node)) {
-                res = Object.entries(node).reduce((acc, [k, v]) => {
-                    if (k.startsWith(MERGE_KEY)) {
-                        const n = Object.assign(acc, resolveMerge(v, visit));
-                        delete n[k];
-                        return n;
-                    }
-                    else {
-                        const n = Object.assign(acc, { [k]: resolveMerge(v, visit) });
-                        return n;
-                    }
-                }, node);
-            }
-            else if (Array.isArray(node)) {
-                res = node.map(item => resolveMerge(item, visit));
-            }
-            else {
-                res = node;
-            }
-        }
-        return res;
-    };
-    return resolveMerge(resolveIncs(root));
+  const [docMap, root] = JSON.parse(JSON.stringify(packed));
+  const incsReducer = visit => (doc, [docptr, incs]) => {
+    const incdoc = resolveIncs(docptr, visit);
+    incs.forEach(inc => {
+      let ptr = doc;
+      while (inc.length > 1) {
+        ptr = ptr[inc.shift()];
+      }
+      ptr[inc.shift()] = incdoc;
+    });
+    return doc;
+  };
+  const resolveIncs = (docptr, visit = {}) => {
+    let res;
+    if (docptr in visit) {
+      res = docMap[docptr].doc;
+    } else {
+      visit[docptr] = true;
+      const {
+        doc,
+        incs
+      } = docMap[docptr];
+      res = Object.entries(incs).reduce(incsReducer(visit), doc);
+    }
+    return res;
+  };
+  const MERGE_KEY = '<<<';
+  const isObj = v => v !== null && typeof v === 'object' && !Array.isArray(v);
+  const resolveMerge = (node, visit = []) => {
+    let res;
+    if (visit.includes(node)) {
+      res = node;
+    } else {
+      visit.push(node);
+      if (isObj(node)) {
+        res = Object.entries(node).reduce((acc, [k, v]) => {
+          if (k.startsWith(MERGE_KEY)) {
+            const n = Object.assign(acc, resolveMerge(v, visit));
+            delete n[k];
+            return n;
+          } else {
+            const n = Object.assign(acc, {
+              [k]: resolveMerge(v, visit)
+            });
+            return n;
+          }
+        }, node);
+      } else if (Array.isArray(node)) {
+        res = node.map(item => resolveMerge(item, visit));
+      } else {
+        res = node;
+      }
+    }
+    return res;
+  };
+  return resolveMerge(resolveIncs(root));
 }
     const packed = [
   {
