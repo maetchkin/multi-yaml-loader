@@ -1,0 +1,4 @@
+name: merge-arrays
+list:
+  <<<1: !include './first-array.yaml'
+  <<<2: !include './second-array.yaml'

@@ -257,6 +257,7 @@ function unpack(packed) {
     };
     const MERGE_KEY = '<<<';
     const isObj = (v) => v !== null && typeof (v) === 'object' && !Array.isArray(v);
+    const isHasCastToArray = (node) => Object.entries(node).every(([k, v]) => k.startsWith(MERGE_KEY) && Array.isArray(v));
     const resolveMerge = (node, visit = []) => {
         let res;
         if (visit.includes(node)) {
@@ -265,17 +266,19 @@ function unpack(packed) {
         else {
             visit.push(node);
             if (isObj(node)) {
-                res = Object.entries(node).reduce((acc, [k, v]) => {
-                    if (k.startsWith(MERGE_KEY)) {
-                        const n = Object.assign(acc, resolveMerge(v, visit));
-                        delete n[k];
-                        return n;
-                    }
-                    else {
-                        const n = Object.assign(acc, { [k]: resolveMerge(v, visit) });
-                        return n;
-                    }
-                }, node);
+                res = isHasCastToArray(node)
+                    ? (new Array()).concat(...Object.values(node))
+                    : Object.entries(node).reduce((acc, [k, v]) => {
+                        if (k.startsWith(MERGE_KEY)) {
+                            const n = Object.assign(acc, resolveMerge(v, visit));
+                            delete n[k];
+                            return n;
+                        }
+                        else {
+                            const n = Object.assign(acc, { [k]: resolveMerge(v, visit) });
+                            return n;
+                        }
+                    }, node);
             }
             else if (Array.isArray(node)) {
                 res = node.map(item => resolveMerge(item, visit));
@@ -286,7 +289,9 @@ function unpack(packed) {
         }
         return res;
     };
-    return resolveMerge(resolveIncs(root));
+    const resIncs = resolveIncs(root);
+    const resMerge = resolveMerge(resIncs);
+    return resMerge;
 }
 function findPackageJson(currentPath) {
     const packageJsonPath = path.resolve(path.join(currentPath, 'package.json'));
