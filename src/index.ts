@@ -366,11 +366,12 @@ function unpack (packed: PackedResult): any {
 
     const isObj = (v: any): boolean => v !== null && typeof(v) === 'object' && !Array.isArray(v);
 
-    const isHasCastToArray = (node:{}):boolean => 
-        Object.entries(node).every(
-            ([k,v])=> k.startsWith(MERGE_KEY) && Array.isArray(v)
-        )
-    ;
+    const checkMergeEntryIsArray = ([k, v]:[string,any]) => k.startsWith(MERGE_KEY) && Array.isArray(v);
+
+    const checkCastToArray = (node:{}):boolean => {
+        const entries = Object.entries(node);
+        return entries.length > 0 && entries.every(checkMergeEntryIsArray);
+    };
 
     const resolveMerge = (node: any, visit: any[] = []): any => {
         let res;
@@ -379,7 +380,7 @@ function unpack (packed: PackedResult): any {
         } else {
             visit.push(node);
             if ( isObj(node) ) {
-                res = isHasCastToArray(node) 
+                res = checkCastToArray(node)
                     ? (new Array()).concat( ...Object.values(node) )
                     : Object.entries(node).reduce(
                         (acc, [k, v]) => {

@@ -200,11 +200,13 @@ test(
     () => createLoading("./documents/merge-arrays.yaml")
             .then(
                 data => {
-                    const {name, list} = data.result;
+                    const {name, list, empty} = data.result;
                     expect(name).toEqual("merge-arrays");
                     expect(list).toBeInstanceOf(Array);
+                    expect(empty).toBeInstanceOf(Object);
                     expect(list.length).toEqual(4);
                     expect(list).toEqual([1,'two',3,'four']);
+                    expect(empty).toEqual({});
                 }
             )
 );

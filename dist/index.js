@@ -257,7 +257,11 @@ function unpack(packed) {
     };
     const MERGE_KEY = '<<<';
     const isObj = (v) => v !== null && typeof (v) === 'object' && !Array.isArray(v);
-    const isHasCastToArray = (node) => Object.entries(node).every(([k, v]) => k.startsWith(MERGE_KEY) && Array.isArray(v));
+    const checkMergeEntryIsArray = ([k, v]) => k.startsWith(MERGE_KEY) && Array.isArray(v);
+    const checkCastToArray = (node) => {
+        const entries = Object.entries(node);
+        return entries.length > 0 && entries.every(checkMergeEntryIsArray);
+    };
     const resolveMerge = (node, visit = []) => {
         let res;
         if (visit.includes(node)) {
@@ -266,7 +270,7 @@ function unpack(packed) {
         else {
             visit.push(node);
             if (isObj(node)) {
-                res = isHasCastToArray(node)
+                res = checkCastToArray(node)
                     ? (new Array()).concat(...Object.values(node))
                     : Object.entries(node).reduce((acc, [k, v]) => {
                         if (k.startsWith(MERGE_KEY)) {

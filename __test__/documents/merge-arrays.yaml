@@ -1,4 +1,5 @@
 name: merge-arrays
+empty: {}
 list:
   <<<1: !include './first-array.yaml'
   <<<2: !include './second-array.yaml'

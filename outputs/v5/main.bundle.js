@@ -37,6 +37,11 @@
   };
   const MERGE_KEY = '<<<';
   const isObj = v => v !== null && typeof v === 'object' && !Array.isArray(v);
+  const checkMergeEntryIsArray = ([k, v]) => k.startsWith(MERGE_KEY) && Array.isArray(v);
+  const checkCastToArray = node => {
+    const entries = Object.entries(node);
+    return entries.length > 0 && entries.every(checkMergeEntryIsArray);
+  };
   const resolveMerge = (node, visit = []) => {
     let res;
     if (visit.includes(node)) {
@@ -44,7 +49,7 @@
     } else {
       visit.push(node);
       if (isObj(node)) {
-        res = Object.entries(node).reduce((acc, [k, v]) => {
+        res = checkCastToArray(node) ? new Array().concat(...Object.values(node)) : Object.entries(node).reduce((acc, [k, v]) => {
           if (k.startsWith(MERGE_KEY)) {
             const n = Object.assign(acc, resolveMerge(v, visit));
             delete n[k];
@@ -64,7 +69,9 @@
     }
     return res;
   };
-  return resolveMerge(resolveIncs(root));
+  const resIncs = resolveIncs(root);
+  const resMerge = resolveMerge(resIncs);
+  return resMerge;
 }
     const packed = [
   {
