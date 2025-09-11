@@ -1,6 +1,6 @@
 {
   "name": "multi-yaml-loader",
-  "version": "2.4.2",
+  "version": "2.4.3",
   "author": "Anton Kirshanov <maetchkin@gmail.com> (https://github.com/maetchkin)",
   "private": false,
   "description": "YAML loader for webpack with !include support",

@@ -3,7 +3,7 @@
 exports[`webpack5: documents-simple 1`] = `
 {
   "main.bundle.js": {
-    "_size": 3450,
+    "_size": 3822,
   },
 }
 `;
